@@ -1,0 +1,11 @@
+latex/*
+*.sty
+*.agdai
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.pdf
+*.ptb
+*.gz

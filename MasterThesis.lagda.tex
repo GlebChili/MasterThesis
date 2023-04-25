@@ -1,0 +1,69 @@
+\documentclass{article}[14pt]
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{hyphenat}
+\usepackage{tikz-cd}
+\usetikzlibrary{babel}
+\usepackage{letltxmacro}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{tikz-cd}
+\usepackage{proof}
+\usepackage{dirtytalk}
+\usepackage[hidelinks]{hyperref}
+\usepackage[links]{agda}
+\usepackage{newunicodechar}
+\usepackage{microtype}
+
+\DisableLigatures[-]{encoding=T2A}
+
+\newunicodechar{λ}{\ensuremath{\mathnormal\lambda}}
+\newunicodechar{←}{\ensuremath{\mathnormal\from}}
+\newunicodechar{→}{\ensuremath{\mathnormal\to}}
+\newunicodechar{∀}{\ensuremath{\mathnormal\forall}}
+\newunicodechar{𝒰}{\ensuremath{\mathcal{U}}}
+\newunicodechar{≡}{\ensuremath{\mathnormal{\equiv}}}
+\newunicodechar{⊔}{\ensuremath{\mathnormal{\sqcup}}}
+
+\newtheorem{theorem}{Теорема}
+\newtheorem{lemma}{Лемма}
+\newtheorem{proposition}{Утверждение}
+\newtheorem{definition}{Определение}
+\newtheorem{corollary}{Следствие}
+
+\title{Гомотопическая теория типов и ее модели}
+\author{Глеб Красилич}
+\date{Май 2023}
+
+\begin{document}
+
+\maketitle
+
+\section{Теория типов Мартин-Лёфа}
+
+\AgdaTarget{\_≡\_}
+\begin{code}
+
+{-# OPTIONS --cubical #-}
+
+open import Agda.Primitive using (Level; lzero; lsuc; _⊔_)
+                           renaming (Set to 𝒰)
+
+module MasterThesis where -- объявляем главный модуль
+
+data _≡_ {l : Level} {A : 𝒰 l} : A → A → 𝒰 l where
+    refl : (a : A) → a ≡ a
+
+{-# BUILTIN EQUALITY _≡_  #-}
+
+ap : ∀ {l m} → {A : 𝒰 l} → {B : 𝒰 m} → {x y : A} 
+     → (f : A → B) → x ≡ y → f x ≡ f y
+ap f (refl _) = refl _
+
+\end{code}
+
+Таким образом у нас есть индуктивный тип \AgdaDatatype{\_≡\_}
+
+\end{document}

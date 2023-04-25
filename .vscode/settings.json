@@ -1,0 +1,20 @@
+{
+    "spellright.language": [
+        "en",
+        "ru"
+    ],
+    "spellright.documentTypes": [
+        "markdown",
+        "latex",
+        "plaintext"
+    ],
+    "cSpell.words": [
+        "lsuc",
+        "lzero",
+        "Лёфа"
+    ],
+    "cSpell.language": "en-US,ru-RU",
+    "cSpell.enableFiletypes": [
+        "agda"
+    ]
+}
