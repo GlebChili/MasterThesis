@@ -1,5 +1,8 @@
 # Магистерская диссертация "Гомотопическая теория типов и ее модели"
 
+Самая последняя успешная версия работы всегда находится по адресу 
+https://masterthesis.up.railway.app/MasterThesis.pdf
+
 Главным файлом работы является `MasterThesis.lagda.tex`, являющийся 
 [Literate Agda TeX](https://agda.readthedocs.io/en/v2.6.3/tools/literate-programming.html#literate-agda-tex) файлом
 (LaTeX со вставками кода на Agda). Для сборки проекты необходимо собрать `MasterThesis.lagda.tex`
