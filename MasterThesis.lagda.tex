@@ -161,7 +161,7 @@ $$(\lambda x : \phi . y)((\lambda y : \psi . y) z) \rightarrow_\beta (\lambda x 
 
 \begin{definition}
     \label{NormalizationDefinition}
-    Элемент $a$ системы $(A, \rightarrow, \twoheadrightarrow)$ называется нормализуемым, если
+    Элемент $a$ системы $(A, \rightarrow, \twoheadrightarrow)$ называется (слабо-)нормализуемым, если
     найдется такой $b \in A$, что 
     \begin{enumerate}
         \item $b$ является нормальной формой.
@@ -170,6 +170,21 @@ $$(\lambda x : \phi . y)((\lambda y : \psi . y) z) \rightarrow_\beta (\lambda x 
     (В частности, всякая нормальная форма является нормализуемой, в силу рефлексивности отношения
     $\twoheadrightarrow$.)
 \end{definition}
+
+\begin{definition}
+    \label{StrongNormalizationDefinition}
+    Элемент $a$ системы $(A, \rightarrow, \twoheadrightarrow)$ называется сильно-нормализуемым,
+    если
+    \begin{enumerate}
+        \item $a$ является нормализуемым.
+        \item Не верно следующие утверждение: существует счетная последовательность
+        элементов $A$ $\{ b_0, b_1, b_2, \dots \}$, такая что $b_0 = a$ и 
+        $b_i \rightarrow b_{i+1}$ для любого натурального $i$.
+    \end{enumerate}
+\end{definition}
+Перефразировав, определение \ref{StrongNormalizationDefinition} говорит, что $a$ является
+сильно-нормализуемым, если всякая последовательность преобразований $\rightarrow$ элемента $a$ приводит
+к нормальной форме за конечное число шагов.
 
 \AgdaTarget{\_≡\_}
 \begin{code}
