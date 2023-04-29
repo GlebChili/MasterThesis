@@ -198,6 +198,20 @@ $$(\lambda x : p . y)((\lambda z : q . zz)(\lambda z : q . zz)) \rightarrow_\bet
 Сразу же замечаем, что терм $(\lambda z : q . zz)(\lambda z : q . zz)$ не является ни сильно-,
 ни слабо-нормализуемым.
 
+\begin{definition}
+    \label{ChurchRosserDefinition}
+    Система $(A, \rightarrow, \twoheadrightarrow)$ обладает свойством Чёрча-Россера (свойством конфлюэнтности),
+    если 
+    $$\forall a, b, b' \in A \Bigl((a \twoheadrightarrow b \land a \twoheadrightarrow b') \Rightarrow \exists c \in A (b \twoheadrightarrow c \land b' \twoheadrightarrow c) \Bigr)$$
+    $$
+    \begin{tikzcd}
+        & \arrow[ld, two heads] a \arrow[rd, two heads] & \\
+        b \arrow[rd, two heads, dashed] & & \arrow[ld, two heads, dashed] b' \\
+        & c &
+    \end{tikzcd}
+    $$
+\end{definition}
+
 \AgdaTarget{\_≡\_}
 \begin{code}
 
