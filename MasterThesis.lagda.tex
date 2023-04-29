@@ -182,9 +182,21 @@ $$(\lambda x : \phi . y)((\lambda y : \psi . y) z) \rightarrow_\beta (\lambda x 
         $b_i \rightarrow b_{i+1}$ для любого натурального $i$.
     \end{enumerate}
 \end{definition}
-Перефразировав, определение \ref{StrongNormalizationDefinition} говорит, что $a$ является
+Иными словами, определение \ref{StrongNormalizationDefinition} говорит, что $a$ является
 сильно-нормализуемым, если всякая последовательность преобразований $\rightarrow$ элемента $a$ приводит
 к нормальной форме за конечное число шагов.
+
+Проиллюстрируем определения \ref{NormalFormDefinition} и \ref{StrongNormalizationDefinition} примерами из
+нашего $\lambda$-исчисления. Терм $(\lambda x : p . y)((\lambda z : q . z) w)$ является сильно нормализуемым:
+мы либо можем переписать внутренний подтерм $(\lambda z : q) w$ с помощью $\beta$-редукции и получить
+терм $(x : p . y) w$, который единственным образом $\beta$-редуцируется до нормальной формы $y$, либо
+либо сразу переписать самое внешние $\lambda$-применение до $y$. Других последовательностей $\beta$-редукций
+для такого терма нет. С другой стороны, терм $(\lambda x : p . y)((\lambda z : q . zz)(\lambda z : q . zz))$
+является только слабо-нормализуемым: как и в прошлом примере, мы можем сразу средуцироваться до $y$,
+или попытаться переписывать подтерм $(\lambda z : q . zz)(\lambda z : q . zz)$ и получить бесконечную последовательность
+$$(\lambda x : p . y)((\lambda z : q . zz)(\lambda z : q . zz)) \rightarrow_\beta (\lambda x : p . y)((\lambda z : q . zz)(\lambda z : q . zz)) \rightarrow_\beta \dots$$
+Сразу же замечаем, что терм $(\lambda z : q . zz)(\lambda z : q . zz)$ не является ни сильно-,
+ни слабо-нормализуемым.
 
 \AgdaTarget{\_≡\_}
 \begin{code}
