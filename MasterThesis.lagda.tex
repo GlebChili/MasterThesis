@@ -212,6 +212,19 @@ $$(\lambda x : p . y)((\lambda z : q . zz)(\lambda z : q . zz)) \rightarrow_\bet
     $$
 \end{definition}
 
+\begin{lemma}
+    \label{UniqueNormalFormLemma}
+    Если для системы $(A, \rightarrow, \twoheadrightarrow)$ выполняется свойство Чёрча-Россера, и
+    $a$ \dash нормализуемый элемент $A$, то его нормальная форма $b$ единственна.
+\end{lemma}
+\begin{proof}
+    Пусть $a$ редуцируется к двум нормальным формам $b$ и $b'$. Тогда по свойству
+    конфлюэнтности найдется такой $c$, что $b \twoheadrightarrow c$ и $b' \twoheadrightarrow c$. Но
+    любая нормальная форма находится в отношении $\twoheadrightarrow$ только сама с собой.
+    А значит
+    $$b = c = b'$$
+\end{proof}
+
 \AgdaTarget{\_≡\_}
 \begin{code}
 
