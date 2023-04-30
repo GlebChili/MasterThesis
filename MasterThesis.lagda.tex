@@ -225,6 +225,36 @@ $$(\lambda x : p . y)((\lambda z : q . zz)(\lambda z : q . zz)) \rightarrow_\bet
     $$b = c = b'$$
 \end{proof}
 
+\begin{theorem}[\cite{SorUrz06}]
+    Система $(\Lambda Terms, \rightarrow_{\alpha \beta}, \twoheadrightarrow_{\alpha \beta})$ обладает
+    свойством Чёрча-Россера.
+\end{theorem}
+
+Существует несколько способов закодировать натуральные числа в $\lambda$-исчислении. Один из таких
+способов \dash построить для каждого натурального $n$ комбинатор $[n]$, называемый нумералом Чёрча,
+следующим образом:
+$$[0] := \lambda f : p \rightarrow p . \lambda x : p . x$$
+$$[1] := \lambda f : p \rightarrow p . \lambda x : p . fx$$
+$$[2] := \lambda f : p \rightarrow p . \lambda x : p . f (fx)$$
+$$[3] := \lambda f : p \rightarrow p . \lambda x : p . f (f (fx))$$
+$$ \dots $$
+$$[n] := \lambda f : p \rightarrow p. \lambda x : p . \underbrace{f(\dots (f}_{n\ \text{применений}\ f} x))$$
+$$ \dots $$
+
+\begin{theorem}[\cite{SorUrz06}]
+    Для всякой вычислимой функции $f$ из $\mathbb{N}$ в $\mathbb{N}$ существует
+    $\lambda$-терм $F$ такой, что
+    \begin{enumerate}
+        \item Если $n$ не принадлежит области определения $f$, то терм $F[n]$ не нормализуем.
+        \item Если $n$ принадлежит области определения $f$, то $F[n] \twoheadrightarrow_{\alpha \beta} [f(n)]$.
+    \end{enumerate}
+\end{theorem}
+
+По лемме \ref{UniqueNormalFormLemma} всякий нумерал Чёрча единственен с точностью до переименования
+связанных переменных, а значит редукция термов $F[n]$ задаёт корректною функциональное отношение на
+$\mathbb{N}$. Таким образом система $(\Lambda Terms, \rightarrow_{\alpha \beta}, \twoheadrightarrow_{\alpha \beta})$
+является полноценной, полной по Тьюрингу моделью вычислений.
+
 \AgdaTarget{\_≡\_}
 \begin{code}
 
@@ -246,8 +276,13 @@ ap f (refl _) = refl _
 
 \end{code}
 
-
-
 Таким образом у нас есть индуктивный тип \AgdaDatatype{\_≡\_}
+
+\begin{thebibliography}{}
+    \bibitem[SorUrz06]{SorUrz06}
+    M. H. Sorensen, P. Urzycyn. \textit{Lectures on the Curry-Howard \\ Isomorphism.}
+    Studies in Logic and the Foundations of Mathematics. \\ Volume 149. 2006. ISBN
+    978-0-444-52077-7.
+\end{thebibliography}
 
 \end{document}
