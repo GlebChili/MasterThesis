@@ -1,4 +1,7 @@
-\documentclass{article}[14pt]
+\documentclass{article}[12pt]
+\usepackage[a4paper, left=30mm,
+ top=30mm,  right=30mm,
+ bottom=20mm]{geometry}
 \usepackage[utf8]{inputenc}
 \usepackage[english,russian]{babel}
 \usepackage[hidelinks]{hyperref}
@@ -306,6 +309,47 @@ $\mathbb{N}$. Таким образом система $(\Lambda Terms, \rightar
     \end{multicols}
     Во всех правилах вывода, $\Gamma$ \dash произвольный контекст.
 \end{definition}
+
+Приведем несколько примеров выводов суждений. Для начала, выведем суждение 
+$x : p \rightarrow q, y : p \vdash (xy) : q$
+\begin{prooftree}
+    \AxiomC{}
+        \RightLabel{$Var$}
+    \UnaryInfC{$ x : p \rightarrow q, y : p \vdash x : p \rightarrow q$}
+    \AxiomC{}
+        \RightLabel{$Var$}
+    \UnaryInfC{$ x : p \rightarrow q, y : p \vdash y : p$}
+        \RightLabel{$App$}
+    \BinaryInfC{$ x : p \rightarrow q, y : p \vdash (xy) : q$}
+\end{prooftree}
+Другой пример: $\vdash (\lambda x : p . x) : p \rightarrow p$
+\begin{prooftree}
+    \AxiomC{}
+        \RightLabel{$Var$}
+    \UnaryInfC{$ x : p \vdash x : p$}
+        \RightLabel{$Abs$}
+    \UnaryInfC{$\vdash (\lambda x : p . x) : p \rightarrow p$}
+\end{prooftree}
+Ну и третий пример: $\vdash (\lambda f : p \rightarrow p . \lambda x : p . f (f x)) : (p \rightarrow p) \rightarrow p \rightarrow p$
+\begin{prooftree}
+    \AxiomC{}
+        \RightLabel{$Var$}
+    \UnaryInfC{$f : p \rightarrow p, x : p \vdash f : p \rightarrow p$}
+    \AxiomC{}
+        \RightLabel{$Var$}
+    \UnaryInfC{$f : p \rightarrow p, x : p \vdash f : p \rightarrow p$}
+    \AxiomC{}
+        \RightLabel{$Var$}
+    \UnaryInfC{$f : p \rightarrow p, x : p \vdash x : p$}
+        \RightLabel{$App$}
+    \BinaryInfC{$f : p \rightarrow p, x : p \vdash (f x) : p$}
+        \RightLabel{$App$}
+    \BinaryInfC{$f : p \rightarrow p, x : p \vdash (f (f x)) : p$}
+        \RightLabel{$Abs$}
+    \UnaryInfC{$f : p \rightarrow p \vdash (\lambda x : p . f (f x)) : p \rightarrow p$}
+        \RightLabel{$Abs$}
+    \UnaryInfC{$\vdash (\lambda f : p \rightarrow p . \lambda x : p . f (f x)) : (p \rightarrow p) \rightarrow p \rightarrow p$}
+\end{prooftree}
 
 \AgdaTarget{\_≡\_}
 \begin{code}
