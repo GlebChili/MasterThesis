@@ -16,6 +16,8 @@
 \usepackage[links]{agda}
 \usepackage{newunicodechar}
 \usepackage{microtype}
+\usepackage{bussproofs}
+\usepackage{multicol}
 
 \DisableLigatures[-]{encoding=T2A}
 
@@ -262,10 +264,47 @@ $\mathbb{N}$. Таким образом система $(\Lambda Terms, \rightar
 
 \begin{definition}
     \label{ContextDefinition}
-    Контекст $\Gamma$ \dash это конечное множество пар вида $x : \phi$, где $x$ \dash $\lambda$-переменная,
+    Контекст $\Gamma$ \dash это конечное, возможно пустое, множество пар вида $x : \phi$, где $x$ \dash $\lambda$-переменная,
     а $\phi$ \dash некоторый тип ($\phi \in Types$), причем для любых двух пар $(a : \phi)$ и $(b : \psi)$ из
     $\Gamma$ верно
     $$a = b \Rightarrow \phi = \psi$$
+    Запись $\Gamma, x : \phi$ означает контекст $\Gamma \cup \{x: \phi\}$.
+\end{definition}
+
+\begin{definition}
+    \label{JudgmentDefinition}
+    Суждение \dash это формальное утверждение вида
+    $$\Gamma \vdash M : \phi$$
+    которое читается как "в контексте $\Gamma$ терм $M$ имеет тип $\phi$".
+
+    Если $\Gamma = \emptyset$, то вместо 
+    $$\emptyset \vdash M : \phi$$ 
+    пишут просто
+    $$\vdash M : \phi$$
+
+    Вывод суждение $\Gamma \vdash M : \phi$ \dash это конечное дерево, чьи вершины помечены суждениями,
+    корень помечен суждением $\Gamma \vdash M : \phi$, 
+    листья помечены аксиомами (правилами без посылок)
+    \begin{prooftree}
+        \AxiomC{}
+            \RightLabel{$Var$}
+        \UnaryInfC{$\Gamma, x : \phi \vdash x : \phi$}
+    \end{prooftree}
+    а ребрам соответствуют правила вывода, описывающие способы получения одних суждений из других:
+    \begin{multicols}{2}
+    \begin{prooftree}
+        \AxiomC{$\Gamma, x : \phi \vdash M : \psi$}
+            \RightLabel{$Abs$}
+        \UnaryInfC{$\Gamma \vdash (\lambda x : \phi . M) : \phi \rightarrow \psi$}
+    \end{prooftree}
+    \begin{prooftree}
+        \AxiomC{$\Gamma \vdash M : \phi \rightarrow \psi$}
+        \AxiomC{$\Gamma \vdash N : \phi$}
+            \RightLabel{$App$}
+        \BinaryInfC{$\Gamma \vdash (MN) : \psi$}
+    \end{prooftree}
+    \end{multicols}
+    Во всех правилах вывода, $\Gamma$ \dash произвольный контекст.
 \end{definition}
 
 \AgdaTarget{\_≡\_}
