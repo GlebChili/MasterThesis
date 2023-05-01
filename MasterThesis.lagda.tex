@@ -351,6 +351,114 @@ $x : p \rightarrow q, y : p \vdash (xy) : q$
     \UnaryInfC{$\vdash (\lambda f : p \rightarrow p . \lambda x : p . f (f x)) : (p \rightarrow p) \rightarrow p \rightarrow p$}
 \end{prooftree}
 
+Естественно, система переписывание термов $(\Lambda Terms, \rightarrow_{\alpha \beta}, \twoheadrightarrow_{\alpha \beta})$
+согласованна с дедуктивной системой вывода суждений о типизации.
+\begin{lemma}[\cite{SorUrz06}]
+    Пусть $M$ \dash $\lambda$-терм такой, что
+    \begin{enumerate}
+        \item Суждение $\Gamma \vdash M : \phi$ выводимо для некоторого контекста $\Gamma$
+        и некоторого типа $\phi$.
+        \item $M \twoheadrightarrow_{\alpha \beta} N$ для некоторого терма $N$.
+    \end{enumerate}
+    Тогда суждение $\Gamma \vdash N : \phi$ также выводимо.
+\end{lemma}
+
+Систему переписываний $(\Lambda Terms, \rightarrow_{\alpha \beta}, \twoheadrightarrow_{\alpha \beta})$
+вместе с дедуктивной системой из определения \ref{JudgmentDefinition} принято называть
+простым типизованным по Чёрчу $\lambda$-исчислением и обозначать $\lambda_\rightarrow$.
+
+\begin{theorem}
+    \label{SimplyTypedStrongNormaliztionTheorem}
+    Пусть $M$ \dash типизуемый терм (для него выводится суждение $\vdash M : \phi$ для некоторого типа $\phi$).
+    Тогда $M$ является сильно-нормализуемым.
+\end{theorem}
+
+Следствием теоремы \ref{SimplyTypedStrongNormaliztionTheorem} является тот факт, что типизуемые термы
+больше не являются полной по Тьюрингу моделью вычислений. Вместо этого типизуемым термам
+соответствует некоторое собственное подмножество тотальных вычислимых функций. Однако, типизуемые
+термы устанавливают соответствие между $\lambda$-исчислением и логикой.
+
+\begin{theorem}[Соответствие Карри \dash Ховарда \cite{SorUrz06}]
+    \label{CarryHowardTheorem}
+    В исчислении $\lambda_\rightarrow$ суждение $\Gamma \vdash N : \phi$ выводится тогда и только
+    тогда, когда $\operatorname{range}(\Gamma) \vdash \phi$ верно для импликативного фрагмента логики высказываний $IPC$,
+    где $\operatorname{range}$ \dash функция из множества пар переменных и типов в множество формул логики высказываний:
+    $$\operatorname{range} : (x : \psi) \mapsto \psi$$
+\end{theorem}
+
+Соответствие Карри \dash Ховарда дает старт парадигме "утверждения-как-типы": мы берем некоторое типизованное
+$\lambda$-исчисление, интерпретируем типы как формальные утверждения (теоремы), а соответствующие
+$\lambda$-термы \dash как доказательства. Причем такой подход заведома конструктивен: $\lambda$-исчисление
+продолжает сохранять некоторую вычислительную интерпретацию, а значит термы-доказательства
+являются конструкциями в стиле интерпретации Брауера \dash Гейтинга \dash Колмогорова.
+
+Усложняя язык $\lambda$-термов и типов и расширяя правила типизации можно получать все более выразительные
+исчисления, которые, с одной стороны, устанавливают соответствия со все более содержательными логиками,
+а с другой стороны, типизуют все большие подмножества тотальных вычислимых функций,
+сохраняя все хорошие мета-свойства, такие как сильная нормализуемость и конфлюэнтность. Двигаясь по первому пути,
+можно пополнить язык термов конструкциями прямой суммы и прямого произведения, а также константой $\bot$,
+установив соответствие между $\lambda$-исчислением и интуиционистской логикой высказываний $Int$.
+А разрешив определять типы через термы, и введя тем самым так называемые зависимые типы, можно
+получить исчисление $\lambda P_1$, которому соответствует интуиционистская логика предикатов.
+
+Двигаясь же по второму пути, мы можем разрешить навешивать кванторы на типы, получив так называемую Систему $F$.
+Чуть более формально, язык системы $F$ позволяет писать термы вида 
+$\Lambda p . M$
+и
+$M \phi$
+где $\alpha$ \dash это тип. Иными словами, в системе $F$ разрешены не только $\lambda$-абстракции
+и $\lambda$-применения по термам, но и по типам. Соответствующая грамматика термов принимает вид
+$$t := x | (\lambda x : \phi . t) | (tt) | (\Lambda p . t) | (t \phi)$$
+($x$ \dash $\lambda$-переменная, $p$ \dash типовая переменная, а $\phi$ \dash тип). Система переписывания термов
+пополняется отношением $\beta'$-редукции
+$$(\Lambda \alpha . M) \phi \rightarrow_{\beta'} M[\phi/\alpha]$$
+Пример:
+$$(\Lambda \alpha . \lambda f : \alpha \rightarrow \alpha . \lambda x : \alpha . f x) p \rightarrow_{\beta'} \lambda f : p \rightarrow p . \lambda x : p . f x$$
+В типах появляется квантор всеобщности по типовым переменным
+$$type := p | (type \rightarrow type) | (\forall p . type)$$
+благодаря чему запись $\forall . p (p \rightarrow p)$, например, становится валидным типом.
+Дедуктивная система вывода суждений о типизации Системы $F$ имеет следующий набор правил:
+\begin{multicols}{2}
+    \begin{prooftree}
+        \AxiomC{}
+            \RightLabel{$Var$}
+        \UnaryInfC{$\Gamma, x : \phi \vdash x : \phi$}
+    \end{prooftree}
+    \begin{prooftree}
+        \AxiomC{$\Gamma, x : \phi \vdash M : \psi$}
+            \RightLabel{$Abs$}
+        \UnaryInfC{$\Gamma \vdash (\lambda x : \phi . M) : \phi \rightarrow \psi$}
+    \end{prooftree}
+\end{multicols}
+\begin{multicols}{2}
+    \begin{prooftree}
+        \AxiomC{$\Gamma \vdash M : \phi \rightarrow \psi$}
+        \AxiomC{$\Gamma \vdash N : \phi$}
+            \RightLabel{$App$}
+        \BinaryInfC{$\Gamma \vdash (MN) : \psi$}
+    \end{prooftree}
+    \begin{prooftree}
+        \AxiomC{$\Gamma \vdash M : \forall p.\phi$}
+            \RightLabel{$Inst$}
+        \UnaryInfC{$\Gamma \vdash (M \psi) : \phi[\psi/p]$}
+    \end{prooftree}
+\end{multicols}
+\begin{prooftree}
+    \AxiomC{$\Gamma \vdash M : \phi$}
+        \RightLabel{(если $p \not \in FVar(\Gamma)$) $Gen$}
+    \UnaryInfC{$\Gamma \vdash (\Lambda p . M) : \forall p . \phi$}
+\end{prooftree}
+
+Типизуемые термы Системы $F$ продолжают быть сильно-нормализуемыми\cite{SorUrz06}, однако им 
+соответствует гораздо большее подмножество вычислимых функций, чем для типизуемых термов $\lambda_\rightarrow$.
+
+\begin{theorem}[\cite{Gira71}]
+    Пусть функция $g : \mathbb N \rightarrow \mathbb N$ определима в арифметике Пеано второго порядка.
+    Тогда в Системе $F$ существует такой типизуемый терм $G$, что
+    $$G[n]_F \rightarrow_{\alpha \beta \beta'} [g(n)]_F$$
+    для любого $n \in \mathbb N$ (здесь $[n]_F$ \dash нумерал для числа $n$ в Системе $F$).
+\end{theorem}
+
 \AgdaTarget{\_≡\_}
 \begin{code}
 
@@ -379,6 +487,10 @@ ap f (refl _) = refl _
     M. H. Sorensen, P. Urzycyn. \textit{Lectures on the Curry-Howard \\ Isomorphism.}
     Studies in Logic and the Foundations of Mathematics. \\ Volume 149. 2006. ISBN
     978-0-444-52077-7.
+
+    \bibitem[Gira71]{Gira71}
+    J. Girard. \textit{Une Extension De ĽInterpretation De Gödel a ĽAnalyse, \\ Et Son Application  a ĽElimination Des Coupures Dans ĽAnalyse  \\ Et La Theorie Des Types.}
+    Studies in Logic and the Foundations of Mathematics. Volume 63. 1971. ISBN 978-0-720-42259-7.
 \end{thebibliography}
 
 \end{document}
