@@ -375,8 +375,19 @@ $x : p \rightarrow q, y : p \vdash (xy) : q$
 
 Следствием теоремы \ref{SimplyTypedStrongNormaliztionTheorem} является тот факт, что типизуемые термы
 больше не являются полной по Тьюрингу моделью вычислений. Вместо этого типизуемым термам
-соответствует некоторое собственное подмножество тотальных вычислимых функций. Однако, типизуемые
-термы устанавливают соответствие между $\lambda$-исчислением и логикой.
+соответствует некоторое собственное подмножество тотальных вычислимых функций, называемое расширенными
+многочленами \cite{Zakr07}: наименьшее множество вычислимых функций,
+замкнутое относительно взятия композиции, содержащие
+\begin{enumerate}
+    \item Проекции из кортежей натуральных чисел.
+    \item Константные функции.
+    \item Сложение.
+    \item Умножение.
+    \item Функцию $ifzero(n, m, p)$: если $n = 0$, то $m$, в противном случае $p$.
+\end{enumerate}
+
+Однако, типизуемые термы имеют не только вычислительную интерпретацию,
+но и устанавливают соответствие между $\lambda$-исчислением и логикой.
 
 \begin{theorem}[Соответствие Карри \dash Ховарда \cite{SorUrz06}]
     \label{CarryHowardTheorem}
@@ -491,6 +502,10 @@ ap f (refl _) = refl _
     \bibitem[Gira71]{Gira71}
     J. Girard. \textit{Une Extension De ĽInterpretation De Gödel a ĽAnalyse, \\ Et Son Application  a ĽElimination Des Coupures Dans ĽAnalyse  \\ Et La Theorie Des Types.}
     Studies in Logic and the Foundations of Mathematics. Volume 63. 1971. ISBN 978-0-720-42259-7.
+
+    \bibitem[Zakr07]{Zakr07}
+    M. Zakrzewski. \textit{Definable functions in the simply typed lambda-calculus.} \\ 2007.
+    arXiv:cs/0701022
 \end{thebibliography}
 
 \end{document}
