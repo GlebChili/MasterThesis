@@ -470,6 +470,106 @@ $$type := p | (type \rightarrow type) | (\forall p . type)$$
     для любого $n \in \mathbb N$ (здесь $[n]_F$ \dash нумерал для числа $n$ в Системе $F$).
 \end{theorem}
 
+\subsection{Теория типов Мартин-Лёфа}
+
+Интуиционистская теория типов Мартин-Лёфа $MLTT$ является типизованным $\lambda$-исчислением, в котором,
+с одной стороны, типизуем довольно большой класс вычислимых функций, а с другой стороны, соответствующий
+язык термов типов достаточно богат, чтобы претендовать на формальные основания конструктивной
+математики в парадигме "утверждения как типы". $MLTT$ не соответствует напрямую никакой интуиционистской логике
+(в смысле соответствия Карри \dash Ховарда), являясь самостоятельной формальной системой.
+
+Язык $\lambda$-термов $MLTT$, по мимо стандартных конструкций простого $\lambda$-исчисления, содержит
+примитивные константы $c, c', \dots$ и функциональные константы $f, f', \dots$, которые мы будем вводить
+далее по ходу повествования. Грамматика термов $MLTT$ имеет вид
+$$t := x | \lambda x : A . t | t(t') | c | f$$
+Здесь $t(t')$ \dash запись $\lambda$-аппликации в более привычном математическом виде применения функции к аргументу,
+такая нотация является более подходящей для $MLTT$ из-за усложнения синтаксиса.
+
+Язык термов не определяется отдельно, вместо этого мы считаем, что язык типов совпадает с языком термов.
+Это означает, что у нас появляются специальные термы, которые, в каком-то смысле, являются именами типов.
+Такие термы-имена мы будем обозначать теперь заглавными латинскими буквами $A, A', B, \dots$.
+Первым примером такого рода термов является счетное семейство примитивных констант
+$$\mathcal U_0, \mathcal U_1, \dots, \mathcal U_i, \dots$$
+Константа $\mathcal U_i$ означает универсум типов уровня $i$, а запись $A : \mathcal U_i$ означает,
+что терм $A$ является именем типа (или просто типом) из $i$-ого универсума.
+
+В отличие от $\lambda_\rightarrow$, мы не будем раздельно определять понятие контекста, структуры формальной
+системы переписывания термов и исчисление суждений о типизации, а объединим всё это
+в одну большую дедуктивную систему, похожую на исчисление естественного вывода. В этой системе есть
+три вида суждений:
+\begin{enumerate}
+    \item $\Gamma \; ctx$ \dash контекст $\Gamma$ корректно определён.
+    \item $\Gamma \vdash a : A$ \dash в контексте $\Gamma$ терм $a$ имеет тип $A$.
+    \item $\Gamma \vdash a \doteq b : A$ \dash в контексте $\Gamma$ $a$ и $b$ являются
+    эквивалентными термами типа $A$.
+\end{enumerate}
+Далее мы перечислим правила вывода, позволяющие получать подобные суждения.
+
+Во-первых, мы хотим считать пустой контекст корректным, и выражаем это через правило
+\begin{prooftree}
+    \AxiomC{}
+        \RightLabel{$ctx-EMP$}
+    \UnaryInfC{$\cdot  \; ctx$}
+\end{prooftree}
+Далее мы описываем способ получения корректного контекста пополнением парами $x : A$
+\begin{prooftree}
+    \AxiomC{$x_1 : A_1, \dots, x_n : A_n \vdash A_{n+1} : \mathcal U_i$}
+        \RightLabel{$ctx-EXT$}
+    \UnaryInfC{$(x_1 : A_1, \dots, x_n : A_n, x_{n+1} : A_{n+1}) \; ctx$}
+\end{prooftree}
+
+Аналог правила $Var$ исчисления $\lambda_\rightarrow$ для $MLTT$:
+\begin{prooftree}
+    \AxiomC{$(x_1 : A_n, \dots, x_i : A_i, \dots, x_n : A_n) \; ctx$}
+    \RightLabel{$Var$}
+    \UnaryInfC{$x_1 : A_n, \dots, x_i : A_i, \dots, x_n : A_n \vdash x_i : A_i$}
+\end{prooftree}
+
+Теперь введем правила, задающие полиморфизм универсумов типов $\mathcal U_i$.
+\begin{multicols}{2}
+    \begin{prooftree}
+        \AxiomC{$\Gamma \; ctx$}
+            \RightLabel{$\mathcal U-INTRO$}
+        \UnaryInfC{$\Gamma \vdash \mathcal U_i :\mathcal U_{i+1}$}
+    \end{prooftree}
+    \begin{prooftree}
+        \AxiomC{$\Gamma \vdash A : \mathcal U_i$}
+            \RightLabel{$\mathcal U-CUMUL$}
+        \UnaryInfC{$\Gamma \vdash A : \mathcal U_{i+1}$}
+    \end{prooftree}
+\end{multicols}
+Правило $\mathcal U-INTRO$ в частности гласит, что каждая примитивная константа $\mathcal U_i$ сама является
+типом в смысле замечания из начала данного раздела.
+
+Далее, зададим базовые свойства отношения эквивалентности термов.
+\begin{multicols}{2}
+    \begin{prooftree}
+        \AxiomC{$\Gamma \vdash a : A$}
+        \UnaryInfC{$\Gamma \vdash a \doteq a : A$}
+    \end{prooftree}
+    \begin{prooftree}
+        \AxiomC{$\Gamma \vdash a \doteq b : A$}
+        \UnaryInfC{$\Gamma \vdash b \doteq a : A$}
+    \end{prooftree}
+\end{multicols}
+\begin{prooftree}
+        \AxiomC{$\Gamma \vdash a \doteq b : A$}
+        \AxiomC{$\Gamma \vdash b \doteq c : A$}
+        \BinaryInfC{$\Gamma \vdash a \doteq c : A$}
+\end{prooftree}
+\begin{multicols}{2}
+    \begin{prooftree}
+        \AxiomC{$\Gamma \vdash a : A$}
+        \AxiomC{$\Gamma \vdash A \doteq B : \mathcal U_i$}
+        \BinaryInfC{$\Gamma \vdash a : B$}
+    \end{prooftree}
+    \begin{prooftree}
+        \AxiomC{$\Gamma \vdash a \doteq b : A$}
+        \AxiomC{$\Gamma \vdash A \doteq B : \mathcal U_i$}
+        \BinaryInfC{$\Gamma \vdash a \doteq b : B$}
+    \end{prooftree}
+\end{multicols}
+
 \AgdaTarget{\_≡\_}
 \begin{code}
 
