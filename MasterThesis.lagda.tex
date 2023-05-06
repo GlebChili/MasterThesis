@@ -573,6 +573,50 @@ $$\mathcal U_0, \mathcal U_1, \dots, \mathcal U_i, \dots$$
     \end{prooftree}
 \end{multicols}
 
+Теперь мы можем перейти к обсуждению содержательных типов. $\Pi$-тип, также известный как тип зависимого
+произведения, является обобщением стрелочного типа $\phi \rightarrow \psi$ из системы $\lambda_\rightarrow$.
+По правилу $Abs$, если в предположении, что переменная $x$ имеет тип $A$, мы можем заключить, что терм $t$
+имеет тип $B$, то мы можем с помощью $\lambda$-абстракции получить тип $A \rightarrow B$. Однако в $MLTT$
+тип $B$ сам является термом, а значит сам может зависеть от свободной переменной $x$, мы должны учесть это
+в наших правилах вывода. Для этого мы вводим функциональную константу $\Pi$ и правило формирование типа
+зависимого произведения:
+\begin{prooftree}
+    \AxiomC{$\Gamma \vdash A : \mathcal U_i$}
+    \AxiomC{$\Gamma, x : A \vdash b : B$}
+        \RightLabel{$\Pi-FORM$}
+    \BinaryInfC{$\Gamma \vdash (\prod \limits_{x:A} B) : \mathcal U_i$}
+\end{prooftree}
+
+Затем мы вводим правило введение $\Pi$-типа, которое описывает способ получение термов типа зависимого
+произведение (аналог правила $Abs$):
+\begin{prooftree}
+    \AxiomC{$\Gamma, x : A \vdash b : B$}
+        \RightLabel{$\Pi-INTRO$}
+    \UnaryInfC{$\Gamma \vdash (\lambda x : A . b) : \prod \limits_{x : A} B$}
+\end{prooftree}
+Причем, как и в случае $\lambda_\rightarrow$, $\lambda$-абстракция связывает свободные вхождения переменной
+$x$ в терм  $b$.
+
+Далее, введем правило элиминации, описывающие способ получения новых типов, если у нас уже есть терма
+типа зависимого произведения.
+\begin{prooftree}
+    \AxiomC{$\Gamma \vdash f : \prod \limits_{x : A} B$}
+    \AxiomC{$\Gamma \vdash a : A$}
+        \RightLabel{$\Pi-ELIM$}
+    \BinaryInfC{$\Gamma \vdash f(a) : B[a/x]$}
+\end{prooftree}
+
+Наконец, введем вычислительное правило, описывающее класс эквивалентности термов $\Pi$-типа (аналог 
+рефлексивно-транзитивного замыкания отношения $\beta$-редукции):
+\begin{prooftree}
+    \AxiomC{$\Gamma, x : A \vdash b : B$}
+    \AxiomC{$\Gamma \vdash a : A$}
+        \RightLabel{$\Pi-COMP$}
+    \BinaryInfC{$\Gamma \vdash (\lambda x : A . b)(a) \doteq b[a/x] : B[a/x]$}
+\end{prooftree}
+Причем подстановка в правиле $\Pi-COMP$, как и раньше, должна быть корректной: свободные переменные $b$ после подстановки
+не должны стать связанными.
+
 \AgdaTarget{\_≡\_}
 \begin{code}
 
