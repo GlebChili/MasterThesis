@@ -744,6 +744,115 @@ $x$ в терм  $b$.
 для терма $(\lambda x : \mathds 1 . C) : \prod_{(x : \mathds 1)} \mathcal U_i$, и подчеркивает, что
 все вхождения $x$ в $C$ являются связанными.
 
+Тип $\mathds 1$ является вырожденным примером индуктивного типа, так мы постулируем в нем наличие всего одного
+элемента, и на его примере трудно увидеть насколько мощными конструкциями являются индуктивные типы. 
+Более иллюстративным примером является тип $\mathbb B$, который населен двумя примитивными константами
+$\mathbb T$ и $\mathbb F$.
+\begin{multicols}{3}
+    \begin{prooftree}
+        \AxiomC{$\Gamma \; ctx$}
+            \RightLabel{$\mathbb B-FORM$}
+        \UnaryInfC{$\Gamma \vdash \mathbb B : \mathcal U_0$}
+    \end{prooftree}
+    \begin{prooftree}
+        \AxiomC{$\Gamma \; ctx$}
+            \RightLabel{$\mathbb B - INTRO_1$}
+        \UnaryInfC{$\Gamma \vdash \mathbb F : \mathbb B$}
+    \end{prooftree}
+    \begin{prooftree}
+        \AxiomC{$\Gamma \; ctx$}
+            \RightLabel{$\mathbb B - INTRO_2$}
+        \UnaryInfC{$\Gamma \vdash \mathbb T : \mathbb B$}
+    \end{prooftree}
+\end{multicols}
+\begin{prooftree}
+    \AxiomC{$\Gamma, x : \mathbb B \vdash C : \mathcal U_i$}
+    \AxiomC{$\Gamma \vdash a : C[\mathbb F/x]$}
+    \AxiomC{$\Gamma \vdash b : C[\mathbb T/x]$}
+    \AxiomC{$\Gamma \vdash c : \mathbb B$}
+        \RightLabel{$\mathbb B - ELIM$}
+    \QuaternaryInfC{$\Gamma \vdash \ind_{\mathbb B}(x.C, a, b, c) : C[c/x]$}
+\end{prooftree}
+\begin{prooftree}
+    \AxiomC{$\Gamma, x : \mathbb B \vdash C : \mathcal U_i$}
+    \AxiomC{$\Gamma \vdash a : C[\mathbb F/x]$}
+    \AxiomC{$\Gamma \vdash b : C[\mathbb T/x]$}
+        \RightLabel{$\mathbb B - COMP_1$}
+    \TrinaryInfC{$\Gamma \vdash \ind_{\mathbb B}(x.C, a, b, \mathbb F)  \doteq a : C[\mathbb F/x]$}
+\end{prooftree}
+\begin{prooftree}
+    \AxiomC{$\Gamma, x : \mathbb B \vdash C : \mathcal U_i$}
+    \AxiomC{$\Gamma \vdash a : C[\mathbb F/x]$}
+    \AxiomC{$\Gamma \vdash b : C[\mathbb T/x]$}
+        \RightLabel{$\mathbb B - COMP_2$}
+    \TrinaryInfC{$\Gamma \vdash \ind_{\mathbb B}(x.C, a, b, \mathbb T)  \doteq b : C[\mathbb T/x]$}
+\end{prooftree}
+
+Рассмотрим $\mathbb B$ как булеву алгебру из двух элементов. Покажем, что терм
+$$\lambda x : \mathbb B . \ind_{\mathbb B}(y.B, \mathbb T, \mathbb F, x)$$
+задает функций отрицания на этой алгебре: применение этого терма к $\mathbb F$ эквивалентно константе $\mathbb T$,
+а применение к $\mathbb T$ \dash константе $\mathbb F$. Для начала покажем, что наша
+$\lambda$-абстракция имеет ожидаемый тип $\prod_{(x : \mathbb B)} \mathbb B$
+(переводит термы типа $\mathbb B$ в термы типа $\mathbb B$):
+\begin{prooftree}
+    \AxiomC{$\dots$}
+    \UnaryInfC{$x : \mathbb B, y : \mathbb B \vdash \mathbb B : \mathcal U_0$}
+    \AxiomC{$\dots$}
+    \UnaryInfC{$x : \mathbb B \vdash \mathbb T : \mathbb B$}
+    \AxiomC{$\dots$}
+    \UnaryInfC{$x : \mathbb B \vdash \mathbb F : \mathbb B$}
+    \AxiomC{$\dots$}
+    \UnaryInfC{$x : \mathbb B \vdash x : \mathbb B$}
+        \RightLabel{$\mathbb B - ELIM$}
+    \QuaternaryInfC{$x : \mathbb B \vdash \ind_{\mathbb B}(y.\mathbb B, \mathbb T, \mathbb F, x) : \mathbb B$}
+    \UnaryInfC{$\vdash (\lambda x : \mathbb B . \ind_{\mathbb B}(y.\mathbb B, \mathbb T, \mathbb F, x)) : \prod \limits_{x : \mathbb B} \mathbb B$}
+\end{prooftree}
+Теперь покажем, что такая $\lambda$-абстракция действительно вычисляет функцию отрицания.
+Действительно, с одной стороны
+\begin{prooftree}
+    \AxiomC{$\dots$}
+    \UnaryInfC{$y : \mathbb B \vdash \mathbb B : \mathcal U_0$}
+    \AxiomC{$\dots$}
+    \UnaryInfC{$\vdash \mathbb T : \mathbb B$}
+    \AxiomC{$\dots$}
+    \UnaryInfC{$\vdash \mathbb F : \mathbb B$}
+        \RightLabel{$\mathbb B - COMP_1$}
+    \TrinaryInfC{$\vdash \ind_{\mathbb B}(y.\mathbb B, \mathbb T, \mathbb F, \mathbb F) \doteq \mathbb T : \mathbb B$}
+\end{prooftree}
+и
+\begin{prooftree}
+    \AxiomC{$\dots$}
+    \UnaryInfC{$y : \mathbb B \vdash \mathbb B : \mathcal U_0$}
+    \AxiomC{$\dots$}
+    \UnaryInfC{$\vdash \mathbb T : \mathbb B$}
+    \AxiomC{$\dots$}
+    \UnaryInfC{$\vdash \mathbb F : \mathbb B$}
+        \RightLabel{$\mathbb B - COMP_2$}
+    \TrinaryInfC{$\vdash \ind_{\mathbb B}(y.\mathbb B, \mathbb T, \mathbb F, \mathbb T) \doteq \mathbb F : \mathbb B$}
+\end{prooftree}
+С другой стороны, выводим
+\begin{prooftree}
+    \AxiomC{$\dots$}
+    \UnaryInfC{$x : \mathbb B \vdash \ind_{\mathbb B}(y.\mathbb B, \mathbb T, \mathbb F, x) : \mathbb B$}
+    \AxiomC{$\dots$}
+    \UnaryInfC{$\vdash \mathbb F : \mathbb B$}
+        \RightLabel{$\Pi-COMP$}
+    \BinaryInfC{$\vdash (\lambda x : \mathbb B . \ind_{\mathbb B}(y.\mathbb B, \mathbb T, \mathbb F, x))(\mathbb F) \doteq \ind_{\mathbb B}(y.\mathbb B, \mathbb T, \mathbb F, \mathbb F) : \mathbb B$}
+\end{prooftree}
+и
+\begin{prooftree}
+    \AxiomC{$\dots$}
+    \UnaryInfC{$x : \mathbb B \vdash \ind_{\mathbb B}(y.\mathbb B, \mathbb T, \mathbb F, x) : \mathbb B$}
+    \AxiomC{$\dots$}
+    \UnaryInfC{$\vdash \mathbb T : \mathbb B$}
+        \RightLabel{$\Pi-COMP$}
+    \BinaryInfC{$\vdash (\lambda x : \mathbb B . \ind_{\mathbb B}(y.\mathbb B, \mathbb T, \mathbb F, x))(\mathbb T) \doteq \ind_{\mathbb B}(y.\mathbb B, \mathbb T, \mathbb F, \mathbb T) : \mathbb B$}
+\end{prooftree}
+А значит, пользуясь базовым правилом транзитивности для $\doteq$, мы можем вывести суждения
+$$\vdash (\lambda x : \mathbb B . \ind_{\mathbb B}(y.\mathbb B, \mathbb T, \mathbb F, x))(\mathbb F) \doteq \mathbb T : \mathbb B$$ 
+и
+$$\vdash (\lambda x : \mathbb B . \ind_{\mathbb B}(y.\mathbb B, \mathbb T, \mathbb F, x))(\mathbb T) \doteq \mathbb F : \mathbb B$$ 
+
 \AgdaTarget{\_≡\_}
 \begin{code}
 
