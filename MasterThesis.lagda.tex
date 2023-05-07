@@ -853,6 +853,88 @@ $$\vdash (\lambda x : \mathbb B . \ind_{\mathbb B}(y.\mathbb B, \mathbb T, \math
 и
 $$\vdash (\lambda x : \mathbb B . \ind_{\mathbb B}(y.\mathbb B, \mathbb T, \mathbb F, x))(\mathbb T) \doteq \mathbb F : \mathbb B$$ 
 
+Наиболее хорошо, пожалуй, всю вычислительную мощь индукторов можно показать на типе натуральных чисел $\mathbb N$.
+\begin{multicols}{2}
+    \begin{prooftree}
+        \AxiomC{$\Gamma \; ctx$}
+            \RightLabel{$\mathbb N - FORM$}
+        \UnaryInfC{$\Gamma \vdash \mathbb N : \mathcal U_0$}
+    \end{prooftree}
+    \begin{prooftree}
+        \AxiomC{$\Gamma \; ctx$}
+            \RightLabel{$\mathbb N - INTRO_1$}
+        \UnaryInfC{$\Gamma \vdash zero : \mathbb N$}
+    \end{prooftree}
+\end{multicols}
+\begin{prooftree}
+    \AxiomC{$\Gamma \vdash n : \mathbb N$}
+        \RightLabel{$\mathbb N - INTRO_2$}
+    \UnaryInfC{$\Gamma \vdash suc(n) : \mathbb N$}
+\end{prooftree}
+\begin{prooftree}
+    \AxiomC{$\Gamma, x : \mathbb N \vdash C : \mathcal U_i$}
+    \AxiomC{$\Gamma \vdash a : C[0/x]$}
+    \AxiomC{$\Gamma, x : \mathbb N, y : C \vdash b : C[suc(x)/x]$}
+    \AxiomC{$\Gamma \vdash n : \mathbb N$}
+    \QuaternaryInfC{$\Gamma \vdash \ind_{\mathbb N}(x.C, a, x.y.b, n) : C[n/x]$}
+\end{prooftree}
+$$(\mathbb N - ELIM)$$
+\begin{prooftree}
+    \AxiomC{$\Gamma, x : \mathbb N \vdash C : \mathcal U_i$}
+    \AxiomC{$\Gamma \vdash a : C[zero/x]$}
+    \AxiomC{$\Gamma, x : \mathbb N, y : C \vdash b : C[suc(x)/x]$}
+        \RightLabel{$\mathbb N - COMP_1$}
+    \TrinaryInfC{$\Gamma \vdash \ind_{\mathbb N}(x.C, a, x.y.b, zero) \doteq a : C[zero/x]$}
+\end{prooftree}
+\begin{prooftree}
+    \AxiomC{$\Gamma, x : \mathbb N \vdash C : \mathcal U_i$}
+    \AxiomC{$\Gamma \vdash a : C[zero/x]$}
+    \AxiomC{$\Gamma, x : \mathbb N, y : C \vdash b : C[suc(x)/x]$}
+    \AxiomC{$\Gamma \vdash n : \mathbb N$}
+    \QuaternaryInfC{$\Gamma \vdash \ind_{\mathbb N}(x.C, a, x.y.b, suc(n)) \doteq b[n/x][(\ind_{\mathbb N}(x.C, a, x.y.b, n))/y] : C[suc(n)/x]$}
+\end{prooftree}
+$$(\mathbb N - COMP_2)$$
+
+Тип $\mathbb N$ населён примитивной константой $zero$, а также снабжён функциональной константой $suc$, которая
+позволяет получать последователей $n+1$. Правило $\mathbb N - ELIM$ гласит, что для любого
+типа $C$, если можно предъявить терм типа $C(zero)$ и, в предположении что $x$ имеет тип $\mathbb N$, а
+$y$ имеет тип $C(x)$, то с помощью индуктора $\ind_{\mathbb N}$ можно получить терм типа $C(n)$ для любого
+$n$ из типа $\mathbb N$. Правила $\mathbb N - COMP_1$ и $\mathbb N - COMP_2$ же гласят, что с вычислительной
+точки зрения индукторы задают в точности тотальные рекурсивные функции на натуральных числах:
+$$f(0) = c$$
+$$f(n+1) = g(f(n))$$
+В качестве игрушечного примера, покажем, что с помощью $\ind_{\mathbb N}$ можно построить функцию
+$n \mapsto n + 1$ (с более содержательными примерами мы столкнемся, начав работу с Agda). Действительно,
+\begin{prooftree}
+    \AxiomC{$\dots$}
+    \UnaryInfC{$x : \mathbb N \vdash \mathbb N : \mathcal U_0$}
+    \AxiomC{$\dots$}
+    \UnaryInfC{$\vdash suc(zero) : \mathbb N$}
+    \AxiomC{$\dots$}
+    \UnaryInfC{$x : \mathbb N, y : \mathbb N \vdash suc(y) : \mathbb N$}
+    \TrinaryInfC{$\vdash \ind_{\mathbb N}(x.\mathbb N, suc(zero), x.y.suc(y), zero) \doteq suc(zero) : \mathbb N$}
+\end{prooftree}
+и
+\begin{prooftree}
+    \AxiomC{$\dots$}
+    \UnaryInfC{$x : \mathbb N \vdash \mathbb N : \mathcal U_0$}
+    \AxiomC{$\dots$}
+    \UnaryInfC{$\vdash suc(zero) : \mathbb N$}
+    \AxiomC{$\dots$}
+    \UnaryInfC{$x : \mathbb N, y : \mathbb N \vdash suc(y) : \mathbb N$}
+    \AxiomC{$\dots$}
+    \UnaryInfC{$\vdash zero : \mathbb N$}
+    \QuaternaryInfC{$\vdash \ind_{\mathbb N}(x.\mathbb N, suc(zero), x.y.suc(y), suc(zero)) \doteq suc(\ind_{\mathbb N}(x.\mathbb N, suc(zero), x.y.suc(y), zero)) : \mathbb N$}
+\end{prooftree}
+Объединим два этих вывода с помощью правила $\mathbb N-INTRO_2-EQ$ и выведем суждение
+$$\vdash \ind_{\mathbb N}(x.\mathbb N, suc(zero), x.y.suc(y), suc(zero)) \doteq suc(suc(zero)) : \mathbb N$$
+Далее, внешней индукцией по длине терма $n = \underbrace{suc(suc(\dots suc(}_{n \text{-раз}}zero)\dots)$
+мы можем доказать выводимость суждений
+$$\vdash \ind_{\mathbb N}(x.\mathbb N, suc(zero), x.y.suc(y), suc(suc(zero))) \doteq suc(suc(suc(zero))) : \mathbb N$$
+$$\vdash \ind_{\mathbb N}(x.\mathbb N, suc(zero), x.y.suc(y), suc(suc(suc(zero)))) \doteq suc(suc(suc(suc(zero)))) : \mathbb N$$
+$$\vdash \ind_{\mathbb N}(x.\mathbb N, suc(zero), x.y.suc(y), suc(suc(suc(suc(zero))))) \doteq suc(suc(suc(suc(suc(zero))))) : \mathbb N$$
+$$\dots$$
+
 \AgdaTarget{\_≡\_}
 \begin{code}
 
