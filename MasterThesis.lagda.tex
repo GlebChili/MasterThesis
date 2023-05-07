@@ -573,6 +573,47 @@ $$\mathcal U_0, \mathcal U_1, \dots, \mathcal U_i, \dots$$
     \end{prooftree}
 \end{multicols}
 
+Следующий набор правил принято называть структурой теории типов, так как они задают свойства контекстов
+и подстановок. Во-первых, имеем два правила ослабления, которые говорят, что выводимость суждений
+сохраняется при расширениях контекстов:
+\begin{multicols}{2}
+    \begin{prooftree}
+        \AxiomC{$\Gamma \vdash A : \mathcal U_i$}
+        \AxiomC{$\Gamma, \Delta \vdash b : B$}
+            \RightLabel{$Wkg_1$}
+        \BinaryInfC{$\Gamma, x : A, \Delta \vdash b : B$}
+    \end{prooftree}
+    \begin{prooftree}
+        \AxiomC{$\Gamma \vdash A : \mathcal U_i$}
+        \AxiomC{$\Gamma, \Delta \vdash a \doteq b : B$}
+            \RightLabel{$Wkg_2$}
+        \BinaryInfC{$\Gamma, x : A, \Delta \vdash a \doteq b : B$}
+    \end{prooftree}
+\end{multicols}
+Во-вторых, имеем правила подстановок:
+\begin{multicols}{2}
+    \begin{prooftree}
+        \AxiomC{$\Gamma \vdash a : A$}
+        \AxiomC{$\Gamma, x : A, \Delta \vdash b : B$}
+            \RightLabel{$Subst_1$}
+        \BinaryInfC{$\Gamma, \Delta[a/x] \vdash b[a/x] : B[a/x]$}
+    \end{prooftree}
+    \begin{prooftree}
+        \AxiomC{$\Gamma \vdash a : A$}
+        \AxiomC{$\Gamma, x : A, \Delta \vdash b \doteq c : B$}
+            \RightLabel{$Subst_2$}
+        \BinaryInfC{$\Gamma, \Delta[a/x] \vdash b[a/x] \doteq c[a/x] : B[a/x]$}
+    \end{prooftree}
+\end{multicols}
+\begin{prooftree}
+    \AxiomC{$\Gamma \vdash a \doteq b : A$}
+    \AxiomC{$\Gamma, x : A, \Delta \vdash c : C$}
+        \RightLabel{$Subst_3$}
+    \BinaryInfC{$\Gamma, \Delta[a/x] \vdash c[a/x] \doteq c[b/x] : C[a/x]$}
+\end{prooftree}
+Естественно, во всех правилах $Subst_i$ подстановка должна быть корректной: никакая переменная, которая до
+подстановки была свободной, не должна стать связанной. 
+
 Теперь мы можем перейти к обсуждению содержательных типов. $\Pi$-тип, также известный как тип зависимого
 произведения, является обобщением стрелочного типа $\phi \rightarrow \psi$ из системы $\lambda_\rightarrow$.
 По правилу $Abs$, если в предположении, что переменная $x$ имеет тип $A$, мы можем заключить, что терм $t$
@@ -614,8 +655,7 @@ $x$ в терм  $b$.
         \RightLabel{$\Pi-COMP$}
     \BinaryInfC{$\Gamma \vdash (\lambda x : A . b)(a) \doteq b[a/x] : B[a/x]$}
 \end{prooftree}
-Причем подстановка в правиле $\Pi-COMP$, как и раньше, должна быть корректной: свободные переменные $b$ после подстановки
-не должны стать связанными.
+Причем подстановка в правиле $\Pi-COMP$, как и раньше, должна быть корректной.
 
 \AgdaTarget{\_≡\_}
 \begin{code}
