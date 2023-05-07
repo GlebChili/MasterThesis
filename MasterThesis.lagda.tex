@@ -622,10 +622,9 @@ $$\mathcal U_0, \mathcal U_1, \dots, \mathcal U_i, \dots$$
 в наших правилах вывода. Для этого мы вводим функциональную константу $\Pi$ и правило формирование типа
 зависимого произведения:
 \begin{prooftree}
-    \AxiomC{$\Gamma \vdash A : \mathcal U_i$}
     \AxiomC{$\Gamma, x : A \vdash b : B$}
         \RightLabel{$\Pi-FORM$}
-    \BinaryInfC{$\Gamma \vdash (\prod \limits_{x:A} B) : \mathcal U_i$}
+    \UnaryInfC{$\Gamma \vdash (\prod \limits_{x:A} B) : \mathcal U_i$}
 \end{prooftree}
 
 Затем мы вводим правило введение $\Pi$-типа, которое описывает способ получение термов типа зависимого
@@ -656,6 +655,24 @@ $x$ в терм  $b$.
     \BinaryInfC{$\Gamma \vdash (\lambda x : A . b)(a) \doteq b[a/x] : B[a/x]$}
 \end{prooftree}
 Причем подстановка в правиле $\Pi-COMP$, как и раньше, должна быть корректной.
+
+Следующий набор правил устанавливает взаимодействие $\Pi$-типов с отношением $\doteq$:
+\begin{prooftree}
+    \AxiomC{$\Gamma, x : A \vdash B \doteq B' : \mathcal U_i$}
+        \RightLabel{$\Pi-FORM-EQ$}
+    \UnaryInfC{$\Gamma \vdash (\prod \limits_{x : A} B) \doteq (\prod \limits_{x : A} B') : \mathcal U_i$}
+\end{prooftree}
+\begin{prooftree}
+    \AxiomC{$\Gamma, x : A \vdash b \doteq b' : B$}
+        \RightLabel{$\Pi-INTRO-EQ$}
+    \UnaryInfC{$\Gamma \vdash (\lambda x : A . b) \doteq (\lambda x : A . b') : \prod \limits_{x : A} B$}
+\end{prooftree}
+\begin{prooftree}
+    \AxiomC{$\Gamma \vdash f : \prod \limits_{x : A} B$}
+    \AxiomC{$\Gamma \vdash a \doteq a' : A$}
+        \RightLabel{$\Pi-ELIM-EQ$}
+    \BinaryInfC{$\Gamma \vdash f(a) \doteq f(a') : B[a/x]$}
+\end{prooftree}
 
 \AgdaTarget{\_≡\_}
 \begin{code}
