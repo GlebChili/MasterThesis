@@ -517,9 +517,11 @@ $$\mathcal U_0, \mathcal U_1, \dots, \mathcal U_i, \dots$$
         \RightLabel{$ctx-EXT$}
     \UnaryInfC{$(x_1 : A_1, \dots, x_n : A_n, x_{n+1} : A_{n+1}) \; ctx$}
 \end{prooftree}
-Заметим, что теперь контекст \dash это упорядоченное конечное множество: тип $A_n$ переменной $x_n$
+Заметим, что теперь контекст \dash это упорядоченная конечная последовательность пар: тип $A_n$ переменной $x_n$
 сам является термом, и может зависеть от свободных переменных, но только тех, которое до этого
-уже были добавлены в контекст.
+уже были добавлены в контекст. Более того, одна и та же переменная может встречаться
+в последовательности несколько раз. Однако одной и той же переменной в контексте 
+все еще нельзя присвоить два различных типа (не равных как слова нашего языка).
 
 Введем аналог правила $Var$ исчисления $\lambda_\rightarrow$ для $MLTT$:
 \begin{prooftree}
@@ -672,6 +674,29 @@ $x$ в терм  $b$.
     \AxiomC{$\Gamma \vdash a \doteq a' : A$}
         \RightLabel{$\Pi-ELIM-EQ$}
     \BinaryInfC{$\Gamma \vdash f(a) \doteq f(a') : B[a/x]$}
+\end{prooftree}
+
+Приведем пример вывода какого-либо суждения о типе зависимого произведения. Покажем, например, что
+правило
+\begin{prooftree}
+\AxiomC{$\Gamma \vdash A : \mathcal U_i$}
+\AxiomC{$\Gamma, x : A \vdash b : B$}
+\BinaryInfC{$\Gamma \vdash (\lambda x : A . (\lambda x : A . b)(x)) \doteq (\lambda x : A . b) : \prod \limits_{x : A} B$}
+\end{prooftree} 
+является допустимым (получается как композиция других правил). Действительно,
+\begin{prooftree}
+    \AxiomC{$\Gamma \vdash A : \mathcal U_i$}
+        \RightLabel{$ctx-EXT$}
+    \UnaryInfC{($\Gamma, x : A) \; ctx$}
+        \RightLabel{$Var$}
+    \UnaryInfC{$\Gamma, x : A \vdash x : A$}
+    \AxiomC{$\Gamma, x : A, \vdash b : B$}
+        \RightLabel{$Wkg_1$}
+    \UnaryInfC{$\Gamma, x : A, x : A \vdash b : B$}
+        \RightLabel{$\Pi-COMP$}
+    \BinaryInfC{$\Gamma, x : A \vdash (\lambda x : A . b)(x) \doteq b : B$}
+        \RightLabel{$\Pi-INTRO-EQ$}
+    \UnaryInfC{$\Gamma \vdash (\lambda x : A . (\lambda x : A . b)(x)) \doteq (\lambda x : A . b) : \prod \limits_{x : A} B$}
 \end{prooftree}
 
 \AgdaTarget{\_≡\_}
