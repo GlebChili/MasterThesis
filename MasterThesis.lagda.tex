@@ -713,38 +713,38 @@ $x$ в терм  $b$.
 формации, введения, элиминации и вычисления, а также правилами $FORM-EQ$, $INTRO-EQ$ и $ELIM-EQ$,
 по аналогии с правилами $\Pi-FORM-EQ$, $\Pi-INTRO-EQ$ и $\Pi-ELIM-EQ$ соответственно
 (мы не будем выписывать такие правило явно из соображения экономии, в силу их простого устройства).
-Начнем с типа $\mathds 1$, населенного единственной примитивной константой $*$.
+Начнем с типа $\mathbb 1$, населенного единственной примитивной константой $*$.
 \begin{multicols}{2}
     \begin{prooftree}
         \AxiomC{$\Gamma \; ctx$}
-            \RightLabel{$\mathds 1-INTRO$}
-        \UnaryInfC{$\Gamma \vdash \mathds 1 : \mathcal U_0$}
+            \RightLabel{$\mathbb 1-INTRO$}
+        \UnaryInfC{$\Gamma \vdash \mathbb 1 : \mathcal U_0$}
     \end{prooftree}
     \begin{prooftree}
         \AxiomC{$\Gamma \; ctx$}
-            \RightLabel{$\mathds 1-INTRO$}
-        \UnaryInfC{$\Gamma \vdash * : \mathds 1$}
+            \RightLabel{$\mathbb 1-INTRO$}
+        \UnaryInfC{$\Gamma \vdash * : \mathbb 1$}
     \end{prooftree}
 \end{multicols}
     \begin{prooftree}
-        \AxiomC{$\Gamma, x : \mathds 1 \vdash C:\mathcal U_i$}
+        \AxiomC{$\Gamma, x : \mathbb 1 \vdash C:\mathcal U_i$}
         \AxiomC{$\Gamma \vdash c : C[*/x]$}
-        \AxiomC{$\Gamma \vdash a : \mathds 1$}
-            \RightLabel{$\mathds 1-ELIM$}
-        \TrinaryInfC{$\Gamma \vdash \ind_{\mathds 1}(x.C, c, a) : C[a/x]$}
+        \AxiomC{$\Gamma \vdash a : \mathbb 1$}
+            \RightLabel{$\mathbb 1-ELIM$}
+        \TrinaryInfC{$\Gamma \vdash \ind_{\mathbb 1}(x.C, c, a) : C[a/x]$}
     \end{prooftree}    
     \begin{prooftree}
-        \AxiomC{$\Gamma, x : \mathds 1 \vdash C : \mathcal U_i$}
+        \AxiomC{$\Gamma, x : \mathbb 1 \vdash C : \mathcal U_i$}
         \AxiomC{$\Gamma \vdash c : C[*/x]$}
-            \RightLabel{$\mathds 1-COMP$}
-        \BinaryInfC{$\Gamma \vdash \ind_{\mathds 1}(x.C, c, *) \doteq c : C[*/x]$}
+            \RightLabel{$\mathbb 1-COMP$}
+        \BinaryInfC{$\Gamma \vdash \ind_{\mathbb 1}(x.C, c, *) \doteq c : C[*/x]$}
     \end{prooftree}
 
-Правила $\mathds 1-ELIM$ и $\mathds 1-COMP$ вводят функциональную константу $\ind_{\mathds 1}$, называемую
-индуктором, которая, с одной стороны, позволяет получить тип $C(x)$ для любого терма $x$ типа $\mathds 1$,
+Правила $\mathbb 1-ELIM$ и $\mathbb 1-COMP$ вводят функциональную константу $\ind_{\mathbb 1}$, называемую
+индуктором, которая, с одной стороны, позволяет получить тип $C(x)$ для любого терма $x$ типа $\mathbb 1$,
 в предположение, что мы можем построить терм $c$ конкретного типа $C[*/x]$, а с другой стороны, позволяет
-задавать тотальные рекурсивные функции от термов типа $\mathds 1$. Запись $x.C$ является сокращением
-для терма $(\lambda x : \mathds 1 . C) : \prod_{(x : \mathds 1)} \mathcal U_i$, и подчеркивает, что
+задавать тотальные рекурсивные функции от термов типа $\mathbb 1$. Запись $x.C$ является сокращением
+для терма $(\lambda x : \mathbb 1 . C) : \prod_{(x : \mathbb 1)} \mathcal U_i$, и подчеркивает, что
 все вхождения $x$ в $C$ являются связанными.
 
 Тип $\mathds 1$ является вырожденным примером индуктивного типа, так мы постулируем в нем наличие всего одного
