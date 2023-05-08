@@ -22,6 +22,7 @@
 \usepackage{bussproofs}
 \usepackage{multicol}
 \usepackage{dsfont}
+\usepackage{bbold}
 
 \DisableLigatures[-]{encoding=T2A}
 
@@ -1027,6 +1028,60 @@ $\sum_{(x : A)} B$ является теоретико-типовым анало
         \RightLabel{$\dotplus - COMP_2$}
     \TrinaryInfC{$\Gamma \vdash (\ind_{A \dotplus B}(z.C, x.c, y.d, inr(b))) \doteq d[b/y] : C[inr(b)/z]$}
 \end{prooftree}
+
+При построении формальных оснований математики, нам бы естественно хотелось иметь возможность формализовать
+и доказывать утверждения о равенствах объектов. Заметим, что в $MLTT$ отношение $\doteq$ на роль равенства
+претендовать не может: любое утверждение, в том числе и о равенстве объектов, должно выражаться некоторым типом,
+а $\doteq$ задает разбиение термов на вычислительно-эквивалентные классы. Кодировать равенство на языке типов
+$MLTT$ мы будем с помощью индуктивного типа $\equiv$:
+\begin{prooftree}
+    \AxiomC{$\Gamma \vdash A : \mathcal U_i$}
+    \AxiomC{$\Gamma \vdash a : A$}
+    \AxiomC{$\Gamma \vdash b : A$}
+        \RightLabel{$\equiv-FORM$}
+    \TrinaryInfC{$\Gamma \vdash (a \equiv_A b) : \mathcal U_i$}
+\end{prooftree}
+\begin{prooftree}
+    \AxiomC{$\Gamma \vdash A : \mathcal U_i$}
+    \AxiomC{$\Gamma \vdash a : A$}
+        \RightLabel{$\equiv-INTRO$}
+    \BinaryInfC{$\Gamma \vdash refl_a : a \equiv_A a$}
+\end{prooftree}
+\begin{prooftree}
+    \AxiomC{$\Gamma, x : A, y : A, p : (x \equiv_A y) \vdash C : \mathcal U_i$}
+    \AxiomC{$\Gamma, z : A \vdash c : C[z/x][z/y][refl_z/p]$}
+    \alwaysNoLine
+    \BinaryInfC{$\Gamma \vdash a : A$}
+    \UnaryInfC{$\Gamma \vdash b : A$}
+    \UnaryInfC{$\Gamma \vdash p' : a \equiv_A b$}
+    \alwaysSingleLine
+        \RightLabel{$\equiv-ELIM$}
+    \UnaryInfC{$\Gamma \vdash \ind_{\equiv_A}(x.y.p.C, z.c, a, b, p') : C[a/x][b/y][p'/p]$}
+\end{prooftree}
+\begin{prooftree}
+    \AxiomC{$\Gamma, x : A, y : A, p : (x \equiv_A y) \vdash C : \mathcal U_i$}
+    \AxiomC{$\Gamma, z : A \vdash c : C[z/x][z/y][refl_z/p]$}
+    \alwaysNoLine
+    \BinaryInfC{$\Gamma \vdash a : A$}
+    \alwaysSingleLine
+        \RightLabel{$\equiv-COMP$}
+    \UnaryInfC{$\Gamma \vdash (\ind_{\equiv_A}(x.y.p.C, z.c, a, a, refl_a)) \doteq c[a/z] : C[a/x][a/y][refl_a/p]$}
+\end{prooftree}
+Каждый тип $\equiv_A$ населен константами $refl_a$, которые выражают принцип рефлексивности равенства.
+Правило $\equiv-ELIM$ же гласит, что если мы хотим доказать некоторое свойство равных объектов $a$ и $b$,
+то нам достаточно рассмотреть случай, когда $a$ и $b$ совпадают синтаксически как слова языка $\lambda$-термов.
+Как мы увидим далее, этого достаточно, чтобы $\equiv$ выражал равенство в привычном смысле.
+Правило $\equiv-FORM-EQ_1$ утверждает, что термы, равные в смысле $\doteq$, также равны в смысле $\equiv$:
+\begin{prooftree}
+    \AxiomC{$\Gamma \vdash A : \mathcal U_i$}
+    \AxiomC{$\Gamma \vdash a \doteq a' : A$}
+    \AxiomC{$\Gamma \vdash b \doteq b' : A$}
+        \RightLabel{$\equiv-FORM-EQ$}
+    \TrinaryInfC{$\Gamma \vdash (a \equiv_A a') \doteq (b \equiv_A b') : \mathcal U_i$}
+\end{prooftree}
+А значит, в частности, если $\vdash a \doteq b : A$, то $\vdash refl_a : a \equiv_A b$.
+
+Последним индуктивным типом $MLTT$ является пустой тип $\mathbb 0$:
 
 \AgdaTarget{\_≡\_}
 \begin{code}
