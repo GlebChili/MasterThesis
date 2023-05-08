@@ -950,6 +950,83 @@ $$\dots$$
         \RightLabel{$\Sigma-FORM$}
     \BinaryInfC{$\Gamma \vdash (\sum \limits_{x : A} B) : \mathcal U_i$}
 \end{prooftree}
+\begin{prooftree}
+    \AxiomC{$\Gamma, x : A \vdash B : \mathcal U_i$}
+    \AxiomC{$\Gamma \vdash a : A$}
+    \AxiomC{$\Gamma \vdash b : B[a/x]$}
+        \RightLabel{$\Sigma-INTRO$}
+    \TrinaryInfC{$\Gamma \vdash (a, b) : \sum \limits_{x : A} B$}
+\end{prooftree}
+\begin{prooftree}
+    \AxiomC{$\Gamma, z : \sum \limits_{x : A} B \vdash C : \mathcal U_i$}
+    \AxiomC{$\Gamma, x : A, y : B \vdash g : C[(x,y)/z]$}
+    \AxiomC{$\Gamma \vdash p : \sum \limits_{x : A} B$}
+        \RightLabel{$\Sigma-ELIM$}
+    \TrinaryInfC{$\Gamma \vdash \ind_{\sum_{(x : A)} B}(z.C, x.y.g, p) : C[p/z]$}
+\end{prooftree}
+\begin{prooftree}
+    \AxiomC{$\Gamma, z : \sum \limits_{x : A} B \vdash C : \mathcal U_i$}
+    \AxiomC{$\Gamma, x : A, y : B \vdash g : C[(x,y)/z]$}
+    \AxiomC{$\Gamma \vdash a : A$}
+    \AxiomC{$\Gamma \vdash b : B[a/x]$}
+        \RightLabel{$\Sigma-COMP$}
+    \QuaternaryInfC{$\Gamma \vdash (\ind_{\sum_{(x : A)} B}(z.C, x.y.g, (a, b))) \doteq g[a/x][b/y] : C[(a, b)/z]$}
+\end{prooftree}
+
+Легко заметить, что если в зависимой сумме $\sum_{(x : A)} B$ тип $B$ не зависит от переменной $x$ как терм, то
+$\sum_{(x : A)} B$ является теоретико-типовым аналогом прямого произведения. Естественно, мы также
+можем определить тип ко-произведения $A \dotplus B$, который, в некотором смысле, населён дизъюнктивным
+объединением термов типа $A$ и типа $B$:
+\begin{prooftree}
+    \AxiomC{$\Gamma \vdash A : \mathcal U_i$}
+    \AxiomC{$\Gamma \vdash B : \mathcal U_i$}
+        \RightLabel{$\dotplus-FORM$}
+    \BinaryInfC{$\Gamma \vdash (A \dotplus B) : \mathcal U_i$}
+\end{prooftree}
+\begin{prooftree}
+    \AxiomC{$\Gamma \vdash A : \mathcal U_i$}
+    \AxiomC{$\Gamma \vdash B : \mathcal U_i$}
+    \AxiomC{$\Gamma \vdash a : A$}
+        \RightLabel{$\dotplus - INTRO_1$}
+    \TrinaryInfC{$\Gamma \vdash inl(a) : A \dotplus B$}
+\end{prooftree}
+\begin{prooftree}
+    \AxiomC{$\Gamma \vdash A : \mathcal U_i$}
+    \AxiomC{$\Gamma \vdash B : \mathcal U_i$}
+    \AxiomC{$\Gamma \vdash b : B$}
+        \RightLabel{$\dotplus - INTRO_2$}
+    \TrinaryInfC{$\Gamma \vdash inr(b) : A \dotplus B$}
+\end{prooftree}
+\begin{prooftree}
+    \AxiomC{$\Gamma, x : A \vdash c : C[inl(x)/z]$}
+    \alwaysNoLine
+    \AxiomC{$\Gamma, z : (A \dotplus B) \vdash C : \mathcal U_i$}
+    \UnaryInfC{$\Gamma, y : B \vdash d : C[inr(y)/z]$}
+    \alwaysSingleLine
+    \AxiomC{$\Gamma \vdash e : (A \dotplus B)$}
+        \RightLabel{$\dotplus - ELIM$}
+    \TrinaryInfC{$\Gamma \vdash \ind_{A \dotplus B}(z.C, x.c, y.d, e) : C[e/z]$}
+\end{prooftree}
+\begin{prooftree}
+    \AxiomC{$\Gamma, x : A \vdash c : C[inl(x)/z]$}
+    \alwaysNoLine
+    \AxiomC{$\Gamma, z : (A \dotplus B) \vdash C : \mathcal U_i$}
+    \UnaryInfC{$\Gamma, y : B \vdash d : C[inr(y)/z]$}
+    \alwaysSingleLine
+    \AxiomC{$\Gamma \vdash a : A$}
+        \RightLabel{$\dotplus - COMP_1$}
+    \TrinaryInfC{$\Gamma \vdash (\ind_{A \dotplus B}(z.C, x.c, y.d, inl(a))) \doteq c[a/x] : C[inl(a)/z]$}
+\end{prooftree}
+\begin{prooftree}
+    \AxiomC{$\Gamma, x : A \vdash c : C[inl(x)/z]$}
+    \alwaysNoLine
+    \AxiomC{$\Gamma, z : (A \dotplus B) \vdash C : \mathcal U_i$}
+    \UnaryInfC{$\Gamma, y : B \vdash d : C[inr(y)/z]$}
+    \alwaysSingleLine
+    \AxiomC{$\Gamma \vdash b : B$}
+        \RightLabel{$\dotplus - COMP_2$}
+    \TrinaryInfC{$\Gamma \vdash (\ind_{A \dotplus B}(z.C, x.c, y.d, inr(b))) \doteq d[b/y] : C[inr(b)/z]$}
+\end{prooftree}
 
 \AgdaTarget{\_≡\_}
 \begin{code}
