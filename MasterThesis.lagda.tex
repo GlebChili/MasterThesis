@@ -626,9 +626,10 @@ $$\mathcal U_0, \mathcal U_1, \dots, \mathcal U_i, \dots$$
 в наших правилах вывода. Для этого мы вводим функциональную константу $\Pi$ и правило формирование типа
 зависимого произведения:
 \begin{prooftree}
+    \AxiomC{$\Gamma \vdash A : \mathcal U_i$}
     \AxiomC{$\Gamma, x : A \vdash b : B$}
         \RightLabel{$\Pi-FORM$}
-    \UnaryInfC{$\Gamma \vdash (\prod \limits_{x:A} B) : \mathcal U_i$}
+    \BinaryInfC{$\Gamma \vdash (\prod \limits_{x:A} B) : \mathcal U_i$}
 \end{prooftree}
 
 Затем мы вводим правило введение $\Pi$-типа, которое описывает способ получение термов типа зависимого
@@ -662,9 +663,10 @@ $x$ в терм  $b$.
 
 Следующий набор правил устанавливает взаимодействие $\Pi$-типов с отношением $\doteq$:
 \begin{prooftree}
+    \AxiomC{$\Gamma \vdash A : \mathcal U_I$}
     \AxiomC{$\Gamma, x : A \vdash B \doteq B' : \mathcal U_i$}
         \RightLabel{$\Pi-FORM-EQ$}
-    \UnaryInfC{$\Gamma \vdash (\prod \limits_{x : A} B) \doteq (\prod \limits_{x : A} B') : \mathcal U_i$}
+    \BinaryInfC{$\Gamma \vdash (\prod \limits_{x : A} B) \doteq (\prod \limits_{x : A} B') : \mathcal U_i$}
 \end{prooftree}
 \begin{prooftree}
     \AxiomC{$\Gamma, x : A \vdash b \doteq b' : B$}
@@ -934,6 +936,20 @@ $$\vdash \ind_{\mathbb N}(x.\mathbb N, suc(zero), x.y.suc(y), suc(suc(zero))) \d
 $$\vdash \ind_{\mathbb N}(x.\mathbb N, suc(zero), x.y.suc(y), suc(suc(suc(zero)))) \doteq suc(suc(suc(suc(zero)))) : \mathbb N$$
 $$\vdash \ind_{\mathbb N}(x.\mathbb N, suc(zero), x.y.suc(y), suc(suc(suc(suc(zero))))) \doteq suc(suc(suc(suc(suc(zero))))) : \mathbb N$$
 $$\dots$$
+
+Вернёмся к вопросу логических конструкций с точки зрения интерпретации Брауэра \dash Гейтинга \dash Колмогорова.
+Согласно БГК, формуле $\exists x \phi(x)$, выражающей существование некоторого объекта $x$ для которого истинно
+свойство $\phi(x)$. С теоретико-типовой точки зрения, для любого зависимого типа $P : \prod_{x : A} B$ 
+нам  нужно уметь строить тип пар следующего вида: первым элементом пары является терм $a$ типа $A$, а вторым \dash
+терм $b$ типа $B(a)$, который конструктивно доказывает, что для $a$ действительно верно свойство $P(a)$.
+В $MLTT$ такой тип пар принято вводить функциональной константой $\Sigma$, называть типом зависимой пары
+и описывать следующем набором правил:
+\begin{prooftree}
+    \AxiomC{$\Gamma \vdash A : \mathcal U_i$}
+    \AxiomC{$\Gamma, x : A \vdash  B : \mathcal U_i$}
+        \RightLabel{$\Sigma-FORM$}
+    \BinaryInfC{$\Gamma \vdash (\sum \limits_{x : A} B) : \mathcal U_i$}
+\end{prooftree}
 
 \AgdaTarget{\_≡\_}
 \begin{code}
