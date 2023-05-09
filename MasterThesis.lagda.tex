@@ -1082,6 +1082,52 @@ $MLTT$ мы будем с помощью индуктивного типа $\equ
 А значит, в частности, если $\vdash a \doteq b : A$, то $\vdash refl_a : a \equiv_A b$.
 
 Последним индуктивным типом $MLTT$ является пустой тип $\mathbb 0$:
+\begin{multicols}{2}
+\begin{prooftree}
+    \AxiomC{$\Gamma \; ctx$}
+        \RightLabel{$\mathbb 0 - FORM$}
+    \UnaryInfC{$\Gamma \vdash \mathbb 0 : \mathcal U_0$}
+\end{prooftree}
+\begin{prooftree}
+    \AxiomC{$\Gamma, x : \mathbb 0 \vdash C : \mathcal U_i$}
+    \AxiomC{$\Gamma \vdash a : \mathbb 0$}
+        \RightLabel{$\mathbb 0 - ELIM$}
+    \BinaryInfC{$\Gamma \vdash \ind_{\mathbb 0}(x.C, a) : C[a/x]$}
+\end{prooftree}
+\end{multicols}
+В отличии от всех предыдущих индуктивных типов, для $\mathbb 0$ мы не вводим правила введения.
+Тип $\mathbb 0$ необходим нам для выражения логического принципа "из лжи следует всё, что угодно".
+
+\begin{lemma}
+    \label{FalsoLemma}
+    Пусть для некоторого контекста $\Gamma$ выводимо суждение $\Gamma \vdash a : \mathbb 0$.
+    Тогда для любого терма $B$, если $B$ является типом (выводимо суждение $\Gamma \vdash B : \mathcal U_i$),
+    то найдется такой терм $b$ такой, что выводится $\Gamma \vdash b : B$.
+\end{lemma}
+\begin{proof}
+    Почти сразу следует из правила $\mathbb 0 - ELIM$:
+    \begin{prooftree}
+        \AxiomC{$\Gamma \vdash B : \mathcal U_i$}
+        \UnaryInfC{$\Gamma, x : \mathbb 0 \vdash B : \mathcal U_i$}
+        \AxiomC{$\Gamma \vdash a : \mathbb 0$}
+        \BinaryInfC{$\Gamma \vdash \ind_{\mathbb 0}(x.B, a) : B$}
+    \end{prooftree}
+\end{proof}
+
+\begin{definition}
+    Типизированное $\lambda$-исчисление называется противоречивым, если для любого типа $A$
+    найдется такой терм $a$, что выводимо суждение $\vdash a : A$.
+\end{definition}
+
+\begin{lemma}
+    \label{MlttInconsistencyCriterionLemma}
+    Исчисление $MLTT$ является противоречивым тогда, и только тогда, когда существует терм $a$ такой,
+    что выводимо суждение $\vdash a : \mathbb 0$.
+\end{lemma}
+\begin{proof}
+    Импликация слева направо очевидна. Импликация в обратную сторону
+    сразу следует из леммы \ref{FalsoLemma} для случая пустого контекста.
+\end{proof}
 
 \AgdaTarget{\_≡\_}
 \begin{code}
