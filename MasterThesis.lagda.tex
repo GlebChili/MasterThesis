@@ -1276,6 +1276,58 @@ $MLTT$ мы будем с помощью индуктивного типа $\equ
     Если в $MLTT$ выводится суждение $\vdash t : T$, то $t$ и $T$ \dash замкнутые термы.
 \end{corollary}
 
+Пусть $C_{MLTT}$ \dash множество всех замкнутых типизуемых термов $MLTT$. Определим
+формальную систему переписывания термов $(C_{MLTT}, \rightarrow_{COMP}, \twoheadrightarrow_{COMP})$:
+термы $a, b \in C_{MLTT}$ находятся в отношение $a \rightarrow_{COMP} b$, если $b$
+получается из $a$ единственной заменой подтерма $c$ на терм $c'$ такой, что выводимо суждение 
+$\Gamma \vdash c \doteq c' : C$ с помощью какого-либо правила $COMP$ ($\Pi-COMP$, $\mathbb 1 - COMP$ и так далее).
+Неформально говоря, $\rightarrow_{COMP}$ является аналогом $\beta$-редукции, получаемого чтением
+вычислительных правил спара налево (в частности, отношение $\rightarrow_{COMP}$ не является симметричным
+и рефлексивным). Несколько примеров:
+$$(\lambda x : \mathcal U_0 . (\lambda y : \mathcal U_0 . y)(x)) \rightarrow_{COMP} \lambda x : \mathcal U_0 . x$$
+$$(\lambda x : \mathbb B . \ind_{\mathbb 1}(x.\mathbb B, \mathbb F, *))(\mathbb T) \rightarrow_{COMP} (\lambda x : \mathbb B . \mathbb F)(\mathbb T) \rightarrow_{COMP} \mathbb F$$
+
+Очевидно, что благодаря правилам $ELIM-EQ$, $INTRO-EQ$ и $FORM-EQ$, если замкнутые типизуемые термы находится
+в отношении $a \rightarrow_{COMP} b$, то выводимо суждение $\vdash a \doteq b : C$. На самом деле,
+с помощью подробной индукции по длине термов и выводов можно доказать следующие сильное утверждение.
+\begin{theorem}[\cite{Mart75}, \cite{HoTTBook}]
+    \label{MlttStrongNormalization}
+    
+    \begin{enumerate}
+        \item Пусть $a$ и $b$ \dash замкнутые типизуемые термы $MLTT$. Суждение \\
+        $\vdash a \doteq b : C$ выводимо тогда и только тогда, когда существует такой $c$ из $C_{MLTT}$,
+        что $a \twoheadrightarrow_{COMP} c$ и $b \twoheadrightarrow_{COMP} c$.
+        \item Система переписывания термов $(C_{MLTT}, \rightarrow_{COMP}, \twoheadrightarrow_{COMP})$
+        сильно нормализуема, причем любая нормальная форма удовлетворяет формальной грамматике
+        $$v := k \; | \; \lambda x : v . v \; | \; \prod_{(x : v)} v \; | \; \sum_{(x : v)} v \; | \; f(\overrightarrow{v})$$
+        $$k := x \; | \; c \; | k(v) \; | \; f(\overrightarrow{v})(k)$$
+    \end{enumerate}
+    где $f(\overrightarrow{v})$ \dash частичное применение термов вида $v$ к функциональной константе $f$.
+\end{theorem}
+
+\begin{corollary}
+    Интуиционистская теория типов Мартин-Лёфа непротиворечива.
+\end{corollary}
+\begin{proof}
+    Как мы уже заметили в следствии \ref{MlttInconsistencyCriterionCorollary}, противоречивость
+    $MLTT$ равносильна выводимости суждения $\vdash a : \mathbb 0$.
+    Пусть такой терм $a$ существует. По теореме \ref{MlttStrongNormalization},
+    мы можем привести $a$ к нормальной форме $a'$ и вывести суждение $\vdash a' : \mathbb 0$.
+    Пусть $a'$ \dash наименьший замкнутый терм типа $\mathbb 0$ в нормальной форме.
+
+    Терм $a'$ не может быть переменной, примитивной константой, а также термом вида $\lambda x : A . b$,
+    $\prod_{(x : A)} B$ или $\sum_{(x : A) B}$. Остается только рассмотреть случай $a' = f(\overrightarrow{v})(k)$.
+    Сразу очевидно, что $f$ не может быть функцией $\dotplus$, $inl, inr$, $\equiv_C$, $suc$, а также конструктором
+    пары зависимой суммы. $f$  также не может быть индуктором $\ind_{\mathbb 1}$, $\ind_{\mathbb B}$,
+    $\ind_{\mathbb N}$, $\ind_{A \dotplus B}$, $\ind_{\Sigma_{(x : A)} B}$ и $\ind_{\equiv_A}$, так
+    как замкнутые типизуемые термы с такими функциональными константами всегда будут 
+    преобразованы согласно правилам $COMP$.
+
+    Остается только случай $a' = \ind_{\mathbb 0}(x.\mathbb 0, b)$. Но тогда $b$ также является замкнутым
+    термом в нормальной форме, и, согласно правилу $\mathbb O-ELIM$, $\vdash b : \mathbb 0$. Но длинна
+    терма $b$ очевидно меньше длины $a'$, что противоречит минимальности $a'$.
+\end{proof}
+
 \AgdaTarget{\_≡\_}
 \begin{code}
 
@@ -1312,6 +1364,14 @@ ap f (refl _) = refl _
     \bibitem[Zakr07]{Zakr07}
     M. Zakrzewski. \textit{Definable functions in the simply typed lambda-calculus.} \\ 2007.
     arXiv:cs/0701022
+    
+    \bibitem[Mart75]{Mart75}
+    P. Martin-Löf. \textit{An Intuitionistic Theory of Types: Predicative Part.} Studies in Logic and the Foundations of Mathematics,
+    Volume 80. 1975. ISBN 978-0-444-10642-1.
+
+    \bibitem[HoTTBook]{HoTTBook}
+    S. Awodey et al. \textit{Homotopy Type Theory: Univalent Foundations of Mathematics.} Institute for Advanced Study.
+    Version: first-edition-1357-gde0b8e22.
 \end{thebibliography}
 
 \end{document}
