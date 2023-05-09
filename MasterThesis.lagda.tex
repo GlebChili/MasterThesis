@@ -522,9 +522,7 @@ $$\mathcal U_0, \mathcal U_1, \dots, \mathcal U_i, \dots$$
 \end{prooftree}
 Заметим, что теперь контекст \dash это упорядоченная конечная последовательность пар: тип $A_n$ переменной $x_n$
 сам является термом, и может зависеть от свободных переменных, но только тех, которое до этого
-уже были добавлены в контекст. Более того, одна и та же переменная может встречаться
-в последовательности несколько раз. Однако одной и той же переменной в контексте 
-все еще нельзя присвоить два различных типа (не равных как слова нашего языка).
+уже были добавлены в контекст.
 
 Введем аналог правила $Var$ исчисления $\lambda_\rightarrow$ для $MLTT$:
 \begin{prooftree}
@@ -681,27 +679,38 @@ $x$ в терм  $b$.
     \BinaryInfC{$\Gamma \vdash f(a) \doteq f(a') : B[a/x]$}
 \end{prooftree}
 
-Приведем пример вывода какого-либо суждения о типе зависимого произведения. Покажем, например, что
-правило
+С аналогами правил $\Pi-INTRO$ и $\Pi-ELIM$ мы уже сталкивались, рассмотрим пример вывода суждения
+$\vdash \prod_{(x : \mathcal U_0)} \mathcal U_0 : \mathcal U_1$ c использованием нового правила $\Pi-FORM$:
 \begin{prooftree}
-\AxiomC{$\Gamma \vdash A : \mathcal U_i$}
-\AxiomC{$\Gamma, x : A \vdash b : B$}
-\BinaryInfC{$\Gamma \vdash (\lambda x : A . (\lambda x : A . b)(x)) \doteq (\lambda x : A . b) : \prod \limits_{x : A} B$}
-\end{prooftree} 
-является допустимым (получается как композиция других правил). Действительно,
-\begin{prooftree}
-    \AxiomC{$\Gamma \vdash A : \mathcal U_i$}
+    \AxiomC{}
+        \RightLabel{$ctx-EMP$}
+    \UnaryInfC{$\cdot \; ctx$}
+        \RightLabel{$\mathcal U - INTRO$}
+    \UnaryInfC{$\vdash \mathcal U_0 : \mathcal U_1$}
+    \AxiomC{}
+        \RightLabel{$ctx-EMP$}
+    \UnaryInfC{$\cdot \; ctx$}
+        \RightLabel{$\mathcal U - INTRO$}
+    \UnaryInfC{$\vdash \mathcal U_0 : \mathcal U_1$}
         \RightLabel{$ctx-EXT$}
-    \UnaryInfC{($\Gamma, x : A) \; ctx$}
-        \RightLabel{$Var$}
-    \UnaryInfC{$\Gamma, x : A \vdash x : A$}
-    \AxiomC{$\Gamma, x : A, \vdash b : B$}
-        \RightLabel{$Wkg_1$}
-    \UnaryInfC{$\Gamma, x : A, x : A \vdash b : B$}
-        \RightLabel{$\Pi-COMP$}
-    \BinaryInfC{$\Gamma, x : A \vdash (\lambda x : A . b)(x) \doteq b : B$}
-        \RightLabel{$\Pi-INTRO-EQ$}
-    \UnaryInfC{$\Gamma \vdash (\lambda x : A . (\lambda x : A . b)(x)) \doteq (\lambda x : A . b) : \prod \limits_{x : A} B$}
+    \UnaryInfC{$(x : \mathcal U_0) \; ctx$}
+        \RightLabel{$\mathcal U - INTRO$}
+    \UnaryInfC{$x : \mathcal U_0 \vdash \mathcal U_0 : \mathcal U_1$}
+        \RightLabel{$\Pi-FORM$}
+    \BinaryInfC{$\vdash (\prod \limits_{x : \mathcal U_0} \mathcal U_0) : \mathcal U_1$}
+\end{prooftree}
+Другой пример, вывод суждения $\vdash (\lambda x : \mathcal U_3 . x)(\mathcal U_2) \doteq \mathcal U_2 : \mathcal U_3$,
+с помощью правила $\Pi-COMP$ (в этот раз для лучшей читаемости мы не будем писать имя каждого правила вывода):
+\begin{prooftree}
+    \AxiomC{}
+    \UnaryInfC{$\cdot \; ctx$}
+    \UnaryInfC{$\vdash \mathcal U_3 : \mathcal U_4$}
+    \UnaryInfC{$(x : \mathcal U_3) \; ctx$}
+    \UnaryInfC{$x : \mathcal U_3 \vdash x : \mathcal U_3$}
+    \AxiomC{}
+    \UnaryInfC{$\cdot \; ctx$}
+    \UnaryInfC{$\vdash \mathcal U_2 : \mathcal U_3$}
+    \BinaryInfC{$\vdash (\lambda x : \mathcal U_3 . x)(\mathcal U_2) \doteq \mathcal U_2 : \mathcal U_3$}
 \end{prooftree}
 
 С точки зрения формализации математики, типам зависимого произведения соответствуют одновременно квантор
