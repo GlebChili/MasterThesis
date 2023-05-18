@@ -936,7 +936,7 @@ $n$ из типа $\mathbb N$. Правила $\mathbb N - COMP_1$ и $\mathbb N
 $$f(0) = c$$
 $$f(n+1) = g(f(n))$$
 В качестве игрушечного примера, покажем, что с помощью $\ind_{\mathbb N}$ можно построить функцию
-$n \mapsto n + 1$ (с более содержательными примерами мы столкнемся, начав работу с Agda). Действительно,
+$n \mapsto n + 1$. Действительно,
 \begin{prooftree}
     \AxiomC{$\dots$}
     \UnaryInfC{$x : \mathbb N \vdash \mathbb N : \mathcal U_0$}
@@ -960,12 +960,36 @@ $n \mapsto n + 1$ (с более содержательными примерам
 \end{prooftree}
 Объединим два этих вывода с помощью правила $\mathbb N-INTRO_2-EQ$ и выведем суждение
 $$\vdash \ind_{\mathbb N}(x.\mathbb N, suc(zero), x.y.suc(y), suc(zero)) \doteq suc(suc(zero)) : \mathbb N$$
-Далее, внешней индукцией по длине терма $n = \underbrace{suc(suc(\dots suc(}_{n \text{-раз}}zero)\dots)$
+Далее, внешней индукцией по длине терма-нумерала $n = \underbrace{suc(suc(\dots suc(}_{n \text{-раз}}zero)\dots)$
 мы можем доказать выводимость суждений
 $$\vdash \ind_{\mathbb N}(x.\mathbb N, suc(zero), x.y.suc(y), suc(suc(zero))) \doteq suc(suc(suc(zero))) : \mathbb N$$
 $$\vdash \ind_{\mathbb N}(x.\mathbb N, suc(zero), x.y.suc(y), suc(suc(suc(zero)))) \doteq suc(suc(suc(suc(zero)))) : \mathbb N$$
 $$\vdash \ind_{\mathbb N}(x.\mathbb N, suc(zero), x.y.suc(y), suc(suc(suc(suc(zero))))) \doteq suc(suc(suc(suc(suc(zero))))) : \mathbb N$$
 $$\dots$$
+
+Теперь рассмотрим более содержательный пример: сложение натуральных чисел. Для начала заметим, что
+\begin{prooftree}
+    \AxiomC{$\dots$}
+    \UnaryInfC{$n : \mathbb N, m : \mathbb N, x : \mathbb N \vdash \mathbb N : \mathcal U_0$}
+    \AxiomC{$\dots$}
+    \UnaryInfC{$n : \mathbb N, m : \mathbb N \vdash m : \mathbb N$}
+    \alwaysNoLine
+    \UnaryInfC{$\dots$}
+    \alwaysSingleLine
+    \UnaryInfC{$n : \mathbb N, m : \mathbb N \vdash n : \mathbb N$}
+    \AxiomC{$\dots$}
+    \UnaryInfC{$n : \mathbb N, m : \mathbb N, x : \mathbb N, y : \mathbb N \vdash suc(y) : \mathbb N$}
+    \TrinaryInfC{$n : \mathbb N, m : \mathbb m \vdash \ind_{\mathbb N}(x.\mathbb N, n, x.y.suc(y), m) : \mathbb N$}
+\end{prooftree}
+а значит выводимы суждения
+$$\vdash \lambda n : \mathbb N . \lambda m : \mathbb N . \ind_{\mathbb N}(x.\mathbb N, n, x.y.suc(y), m) : \prod_{n : \mathbb N} \prod_{m : \mathbb N} \mathbb N$$
+$$\vdash \lambda n : \mathbb N . \lambda m : \mathbb N . \ind_{\mathbb N}(x.\mathbb N, n, x.y.suc(y), m)(l)(0) \doteq l : \mathbb N$$
+$$\vdash \lambda n : \mathbb N . \lambda m : \mathbb N . \ind_{\mathbb N}(x.\mathbb N, n, x.y.suc(y), m)(l)(suc(zero)) \doteq suc(l) : \mathbb N$$
+$$\vdash \lambda n : \mathbb N . \lambda m : \mathbb N . \ind_{\mathbb N}(x.\mathbb N, n, x.y.suc(y), m)(l)(suc(suc(zero))) \doteq suc(suc(l)) : \mathbb N$$
+$$\dots$$
+Следовательно, с помощью всё той же внешней индукцией по длине нумералов, для любых натуральных $l$ и $k$, $\lambda$-аппликация
+$$\lambda n : \mathbb N . \lambda m : \mathbb N . \ind_{\mathbb N}(x.\mathbb N, n, x.y.suc(y), m)(l)(k)$$
+$\doteq$-эквивалентна нумералу для натурального числа $l + k$.
 
 Вернёмся к вопросу логических конструкций с точки зрения интерпретации Брауэра \dash Гейтинга \dash Колмогорова.
 Согласно БГК, формуле $\exists x \phi(x)$, выражающей существование некоторого объекта $x$ для которого истинно
