@@ -34,6 +34,15 @@
 \newunicodechar{≡}{\ensuremath{\mathnormal{\equiv}}}
 \newunicodechar{⊔}{\ensuremath{\mathnormal{\sqcup}}}
 \newunicodechar{₀}{\ensuremath{\mathnormal{{}_0}}}
+\newunicodechar{₁}{\ensuremath{\mathnormal{{}_1}}}
+\newunicodechar{₂}{\ensuremath{\mathnormal{{}_2}}}
+\newunicodechar{₃}{\ensuremath{\mathnormal{{}_3}}}
+\newunicodechar{₄}{\ensuremath{\mathnormal{{}_4}}}
+\newunicodechar{₅}{\ensuremath{\mathnormal{{}_5}}}
+\newunicodechar{₆}{\ensuremath{\mathnormal{{}_6}}}
+\newunicodechar{₇}{\ensuremath{\mathnormal{{}_7}}}
+\newunicodechar{₈}{\ensuremath{\mathnormal{{}_8}}}
+\newunicodechar{₉}{\ensuremath{\mathnormal{{}_9}}}
 \newunicodechar{𝟙}{\ensuremath{\mathbb{1}}}
 \newunicodechar{𝔹}{\ensuremath{\mathbb{B}}}
 \newunicodechar{𝔽}{\ensuremath{\mathbb{F}}}
@@ -1594,6 +1603,8 @@ id x = x
 своим именем и возможными зависимостями (правила $FORM$), а также описанием населяющих
 этот тип термов (правила $INTRO$). После таких определений индуктивных типов, Agda 
 автоматически выводит соответствующие правила $ELIM$ и $COMP$.
+\AgdaTarget{≡}
+\AgdaTarget{refl}
 \begin{code}
 data 𝟙 : 𝒰 where
     * : 𝟙
@@ -1659,9 +1670,37 @@ infixl 4 _+ᴺ_
 \begin{code}
 _·ᴺ_ : ℕ → ℕ → ℕ
 x ·ᴺ zero = zero
-x ·ᴺ (suc y) = (x ·ᴺ y) +ᴺ y
+x ·ᴺ (suc y) = (x ·ᴺ y) +ᴺ x
 
 infixl 5 _·ᴺ_ -- умножение лево-ассоциативно и имеет приоритет перед сложением
+\end{code}
+
+С помощью типа равенства \AgdaDatatype{≡} мы теперь можем показать, что наши функции выше
+корректно определенны на конкретных термах. Причем перед проверкой типов Agda приводит все термы к нормальной
+форме, в том числе честно вычисляя функции отрицания, сложения и умножения, а значит
+для доказательства корректности нам будет достаточно просто применить функциональную константу
+(конструктор термов) \AgdaInductiveConstructor{refl} к терму-результату вычисления:
+\begin{code}
+notProp₁ : not 𝔽 ≡ 𝕋
+notProp₁ = refl 𝕋
+
+notProp₂ : not 𝕋 ≡ 𝔽
+notProp₂ = refl 𝔽
+
+addProp₁ : ((suc zero) +ᴺ (suc (suc zero))) ≡ (suc (suc (suc zero)))
+addProp₁ = refl (suc (suc (suc zero)))
+
+addProp₂ : (3 +ᴺ 2) ≡ 5 -- полузуемся втроенной поддержкой арабских цифр
+addProp₂ = refl (suc (suc (suc (suc (suc zero)))))
+
+addProp₃ : (0 +ᴺ (10 +ᴺ 15)) ≡ 25
+addProp₃ = refl 25
+
+multProp₁ : (12 ·ᴺ 6) ≡ 72
+multProp₁ = refl 72
+
+multProp₂ : 0 ≡ (0 ·ᴺ 1001)
+multProp₂ = refl zero
 \end{code}
 
 \begin{thebibliography}{}
@@ -1687,4 +1726,4 @@ infixl 5 _·ᴺ_ -- умножение лево-ассоциативно и им
     Version: first-edition-1357-gde0b8e22.
 \end{thebibliography}
 
-\end{document}
+\end{document} 
