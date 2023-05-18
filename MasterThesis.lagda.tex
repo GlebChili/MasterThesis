@@ -34,6 +34,14 @@
 \newunicodechar{≡}{\ensuremath{\mathnormal{\equiv}}}
 \newunicodechar{⊔}{\ensuremath{\mathnormal{\sqcup}}}
 \newunicodechar{₀}{\ensuremath{\mathnormal{{}_0}}}
+\newunicodechar{𝟙}{\ensuremath{\mathbb{1}}}
+\newunicodechar{𝔹}{\ensuremath{\mathbb{B}}}
+\newunicodechar{𝔽}{\ensuremath{\mathbb{F}}}
+\newunicodechar{𝕋}{\ensuremath{\mathbb{T}}}
+\newunicodechar{Σ}{\ensuremath{\mathnormal{\Sigma}}}
+\newunicodechar{ℕ}{\ensuremath{\mathbb{N}}}
+\newunicodechar{∔}{\ensuremath{\mathnormal{\dotplus}}}
+\newunicodechar{𝟘}{\ensuremath{\mathbb{0}}}
 
 \newtheorem{theorem}{Теорема}
 \newtheorem{lemma}{Лемма}
@@ -1556,7 +1564,39 @@ id x = x
 Если мы же мы хотим рассуждать строго в $MLTT$, то можем считать, что \AgdaFunction{id} задаёт
 не один $\lambda$-терм, а целое семейство: по одному для каждого универсума $\mathcal U_i$.
 
+Теперь определим в Agda базовые индуктивные типы. Каждый индуктивный тип определяется
+своим именем и возможными зависимостями (правила $FORM$), а также описанием населяющих
+этот тип термов (правила $INTRO$). После таких определений индуктивных типов, Agda 
+автоматически выводит соответствующие правила $ELIM$ и $COMP$.
 \begin{code}
+data 𝟙 : 𝒰 where
+    * : 𝟙
+
+data 𝔹 : 𝒰 where
+    𝔽 : 𝔹
+    𝕋 : 𝔹
+
+data 𝟘 : 𝒰 where -- пустой тип
+
+data ℕ : 𝒰 where
+    zero : ℕ
+    suc : ℕ → ℕ
+{-# BUILTIN NATURAL ℕ #-} -- регистрируем ℕ как
+-- тип натуральных числе по-умолчанию
+-- (в частности, позволяет использовать арабские цифры
+-- для записи термов)
+
+data Σ {i j : Level} (A : 𝒰 i) (B : A → 𝒰 j) : 𝒰 (i ⊔ j) where
+    _,_ : (x : A) → B x → Σ A B -- специальный синтаксис для инфиксных
+-- операторов
+
+infixr 4 _,_ -- устанавливаем приоритет инфиксного 
+-- и право-ассоциативность оператора
+
+data _∔_ {i j : Level} (A : 𝒰 i) (B : 𝒰 j) : 𝒰 (i ⊔ j) where
+    inl : A → (A ∔ B)
+    inr : B → (A ∔ B)
+
 data _≡_ {l : Level} {A : 𝒰 l} : A → A → 𝒰 l where
     refl : (a : A) → a ≡ a
 
