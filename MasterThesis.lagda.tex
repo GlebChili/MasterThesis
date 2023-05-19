@@ -53,6 +53,9 @@
 \newunicodechar{𝟘}{\ensuremath{\mathbb{0}}}
 \newunicodechar{ᴺ}{\ensuremath{\mathnormal{{}^N}}}
 \newunicodechar{·}{\ensuremath{\mathnormal{\cdot}}}
+\newunicodechar{×}{\ensuremath{\mathnormal{\times}}}
+\newunicodechar{¬}{\ensuremath{\mathnormal{\neg}}}
+\newunicodechar{Π}{\ensuremath{\mathnormal{\Pi}}}
 
 \newtheorem{theorem}{Теорема}
 \newtheorem{lemma}{Лемма}
@@ -1776,6 +1779,72 @@ $$\mathbb 1-ELIM : \prod_{(C : \prod_{(x : \mathbb 1)} \mathcal U_i)} \prod_{(c 
           → (b : C 𝕋)
           → (𝔹-ELIM C a b 𝕋 ≡ b)
 𝔹-COMP₂ C a b = refl b
+\end{code}
+
+Перейдём к вопросам формализации и приложений обобщённого соответствия Карри \dash Ховарда.
+Для начала покажем, что для типов (если мы воспринимаем их как утверждения) выполнены аналоги
+всех естественных интуиционистских логических законов. Начнем с определения
+типа прямого произведения (частный случай типа зависимой суммы, как мы уже обсуждали в предыдущей главе),
+который будет выступать в роли конъюнкции:
+\begin{code}
+_×_ : {i j : Level} → 𝒰 i → 𝒰 j → 𝒰 (i ⊔ j)
+A × B = Σ A (λ x → B) -- второй аргумент Σ - константная функция,
+-- которая всегда редуцируется как терму-типу B
+
+infixl 2 _×_
+\end{code}
+Также можем определить интуиционистское отрицание на типах: предположение, что тип $A$ населён
+ведёт к абсурду
+\begin{code}
+¬ : {i : Level} → 𝒰 i → 𝒰 i
+¬ A = (A → 𝟘)
+\end{code}
+Теперь мы можем вывести теоретико-типовые аналоги аксиом интуиционистской логики высказываний.
+\begin{code}
+Ax1 : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 i}
+      → A → B → A
+Ax1 = λ a b → a
+
+Ax2 : {i j k : Level} → {A : 𝒰 i} → {B : 𝒰 j} → {C : 𝒰 k}
+      → (A → (B → C)) → ((A → B) → (A → C))
+Ax2 abc ab = λ x → abc x (ab x)
+
+Ax3 : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+      → (A × B) → A
+Ax3 (a , b) = a
+
+Ax4 : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+      → (A × B) → B
+Ax4 (a , b) = b
+
+Ax5 : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+      → (A → B → (A × B))
+Ax5 a b = (a , b)
+
+Ax6 : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+      → (A → (A ∔ B))
+Ax6 a = inl a
+
+Ax7 : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+      → (B → (A ∔ B))
+Ax7 b = inr b
+
+Ax9 : {i j k : Level} → {A : 𝒰 i} → {B : 𝒰 j} → {C : 𝒰 k}
+      → (A → C) → (B → C) → ((A ∔ B) → C)
+Ax9 ac bc (inl a) = ac a
+Ax9 ac bc (inr b) = bc b
+
+Ax10 : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+       → (A → B) → (A → ¬ B) → ¬ A
+Ax10 {i} {j} {A} {B} ab anb = λ a → anb a (ab a)
+
+Ax11 : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+       → (A → ¬ A → B)
+Ax11 {i} {j} {A} {B} a nega = 𝟘-ELIM (λ x → B) (nega a)
+
+MP : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j} -- правило MP как Π-тип
+     → A → (A → B) → B
+MP a ab = ab a
 \end{code}
 
 \begin{thebibliography}{}
