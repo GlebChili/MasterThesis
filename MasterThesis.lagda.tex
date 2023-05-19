@@ -1703,6 +1703,64 @@ multProp₂ : 0 ≡ (0 ·ᴺ 1001)
 multProp₂ = refl zero
 \end{code}
 
+Как мы уже могли понять, все правила типизации термов существуют в некотором внутреннем представлении компилятора
+Agda, и мы не можем с ними взаимодействовать напрямую. Это порождает некоторые вопросы. Например,
+действительно ли правила элиминации, сгенерированное для нашего индуктивного типа, совпадают с соответствующими
+правилами $MLTT$. Тем не менее, мы можем сформулировать всякое правило элиминации как некоторый замкнутый
+терм типа зависимого произведения. Так, правило $\mathbb 1-ELIM$ в $MLTT$ эквивалентно
+постулированию существования терма 
+$$\mathbb 1-ELIM : \prod_{(C : \prod_{(x : \mathbb 1)} \mathcal U_i)} \prod_{(c : C(*))} \prod_{(x : \mathbb 1)} C(x)$$
+Давайте явно предъявим термы-элиминаторы для каждого базового индуктивного типа, и тип самым
+убедимся, что любое суждение о типизации из $MLTT$ можно перенести в Agda:
+\AgdaTarget{ℕ-ELIM}
+\begin{code}
+𝟙-ELIM : {i : Level} → (C : 𝟙 → 𝒰 i) → (c : C *) → (a : 𝟙) → C a
+𝟙-ELIM C c * = c
+
+𝔹-ELIM : {i : Level} → (C : 𝔹 → 𝒰 i) 
+         → (a : C 𝔽) 
+         → (b : C 𝕋) 
+         → (c : 𝔹) → C c
+𝔹-ELIM C a b 𝔽 = a
+𝔹-ELIM C a b 𝕋 = b
+
+𝟘-ELIM : {i : Level} → (C : 𝟘 → 𝒰 i) → (x : 𝟘) → C x
+𝟘-ELIM P = λ () -- специальный паттерн "абсурд" для пустых типов
+
+ℕ-ELIM : {i : Level} → (C : ℕ → 𝒰 i)
+         → (a : C 0) -- база структурной индукции
+         → ((x : ℕ) → (y : C x) → C (suc x)) -- шаг структурной индукции
+         → (n : ℕ) → C n
+ℕ-ELIM C base step zero = base
+ℕ-ELIM C base step (suc x) = step x IH
+    where -- открываем локальное лексическое окружение (локальные термы)
+        IH : C x -- аналог предположения индукции
+        IH = ℕ-ELIM C base step x
+
+Σ-ELIM : {i j k : Level} → {A : 𝒰 i} → {B : A → 𝒰 j}
+         → (C : Σ A B → 𝒰 k)
+         → ((x : A) → (y : B x) → C (x , y))
+         → (p : Σ A B) → C p
+Σ-ELIM C step (a , b) = step a b
+
+∔-ELIM : {i j k : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+         → (C : (A ∔ B) → 𝒰 k)
+         → ((x : A) → C (inl x))
+         → ((y : B) → C (inr y))
+         → (e : (A ∔ B)) → C e
+∔-ELIM C step₁ step₂ (inl a) = step₁ a
+∔-ELIM C step₁ step₂ (inr b) = step₂ b
+
+≡-ELIM : {i j : Level} → {A : 𝒰 i}
+         → (C : (x : A) → (y : A) → (p : x ≡ y) → 𝒰 j)
+         → ((z : A) → C z z (refl z))
+         → (a : A) → (b : A) → (p' : a ≡ b)
+         → C a b p'
+≡-ELIM C step a a (refl a) = step a
+\end{code}
+Теперь очевидно, особенно на примере \AgdaFunction{ℕ-ELIM}, что правила элиминации являются
+ничем иным, как принципами индукции для индуктивных типов (отсюда исторически и происходит их название).
+
 \begin{thebibliography}{}
     \bibitem[SorUrz06]{SorUrz06}
     M. H. Sorensen, P. Urzycyn. \textit{Lectures on the Curry-Howard \\ Isomorphism.}
