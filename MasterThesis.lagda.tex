@@ -56,6 +56,7 @@
 \newunicodechar{×}{\ensuremath{\mathnormal{\times}}}
 \newunicodechar{¬}{\ensuremath{\mathnormal{\neg}}}
 \newunicodechar{Π}{\ensuremath{\mathnormal{\Pi}}}
+\newunicodechar{↔}{\ensuremath{\mathnormal{\leftrightarrow}}}
 
 \newtheorem{theorem}{Теорема}
 \newtheorem{lemma}{Лемма}
@@ -1906,7 +1907,52 @@ doubleNegation {i} {A} (inr nota) doubleNeg = 𝟘-ELIM (λ x → A) (doubleNeg 
 \begin{code}
 tripleNegation : {i : Level} → {A : 𝒰 i} → ¬ (¬ (¬ A)) → ¬ A
 tripleNegation {i} {A} tripleNeg = λ (x : A)  → tripleNeg (λ (y : ¬ A) → y x)
-\end{code} 
+\end{code}
+
+Выведем также законы контрапозиции.
+\begin{code}
+contr₁ : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+         → (A → B) → (¬ B → ¬ A)
+contr₁ {i} {j} {A} {B} AtoB = λ (x : B → 𝟘) (a : A) → x (AtoB a)
+
+contr₂ : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+         → LEM B
+         → (¬ B → ¬ A) → (A → B)
+contr₂ {i} {j} {A} {B} (inl b) notBtoNotA a = b
+contr₂ {i} {j} {A} {B} (inr notB) notBtoNotA a = 𝟘-ELIM (λ x → B) p2
+    where
+        p1 : ¬ A
+        p1 a = notBtoNotA notB a
+        p2 : 𝟘
+        p2 = notBtoNotA notB a
+\end{code}
+
+Мы также можем определить теоретико типовой аналог логической эквивалентности
+(прямое произведение двух $\Pi$-типов) и вывести его свойства:
+\begin{code}
+_↔_ : {i j : Level} → 𝒰 i → 𝒰 j → 𝒰 (i ⊔ j)
+A ↔ B = (A → B) × (B → A)
+
+eProp₁ : {i : Level} → {A : 𝒰 i} → (A ↔ A)
+eProp₁ = ((λ x → x) , (λ x → x))
+
+eProp₂ : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+         → (A ↔ B) → (¬ A ↔ ¬ B)
+eProp₂ {i} {j} {A} {B} (AtoB , BtoA) = (contr₁ BtoA , contr₁ AtoB)
+
+eProp₃ : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+         → LEM A → LEM B
+         → (A ↔ B) ↔ (¬ A ↔ ¬ B)
+eProp₃ {i} {j} {A} {B} lemA lemB = (eProp₂ , p)
+    where
+        p : ¬ A ↔ ¬ B → A ↔ B
+        p (notAtoNotB , notBtoNotA) = (p1 , p2)
+            where
+                p1 : A → B
+                p1 = contr₂ lemB notBtoNotA
+                p2 : B → A
+                p2 = contr₂ lemA notAtoNotB
+\end{code}
 
 \begin{thebibliography}{}
     \bibitem[SorUrz06]{SorUrz06}
@@ -1931,4 +1977,4 @@ tripleNegation {i} {A} tripleNeg = λ (x : A)  → tripleNeg (λ (y : ¬ A) → 
     Version: first-edition-1357-gde0b8e22.
 \end{thebibliography}
 
-\end{document} 
+\end{document}  
