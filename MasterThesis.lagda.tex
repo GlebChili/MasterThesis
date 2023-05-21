@@ -2024,9 +2024,9 @@ transport {i} {j} {A} {a} {a} C (refl a) = λ (x : C a) → x
 +ᴺ-assoc n m zero = refl (n +ᴺ m)
 +ᴺ-assoc n m (suc l) = ap suc (+ᴺ-assoc n m l)
 
-+ᴺ-commute : (n m : ℕ) → (n +ᴺ m) ≡ (m +ᴺ n)
-+ᴺ-commute n zero = sym (0-is-left-neutral n)
-+ᴺ-commute n (suc m) = trans (ap suc (+ᴺ-commute n m)) p4
++ᴺ-commut : (n m : ℕ) → (n +ᴺ m) ≡ (m +ᴺ n)
++ᴺ-commut n zero = sym (0-is-left-neutral n)
++ᴺ-commut n (suc m) = trans (ap suc (+ᴺ-commut n m)) p4
     where
         p1 : (n : ℕ) → (1 +ᴺ n) ≡ suc n
         p1 zero = refl 1
@@ -2037,6 +2037,82 @@ transport {i} {j} {A} {a} {a} C (refl a) = λ (x : C a) → x
         p3 = sym (ap (λ x → m +ᴺ x) (p1 n))
         p4 : suc (m +ᴺ n) ≡ (suc m) +ᴺ n
         p4 = trans p3 p2
+\end{code}
+Дистрибутивность, коммутативность и ассоциативность умножения:
+\begin{code}
+ℕ-distrib₁ : (n m l : ℕ) → (n ·ᴺ (m +ᴺ l)) ≡ ((n ·ᴺ m) +ᴺ (n ·ᴺ l))
+ℕ-distrib₁ n m zero = refl (n ·ᴺ m)
+ℕ-distrib₁ n m (suc l) = trans p1 (+ᴺ-assoc (n ·ᴺ m) (n ·ᴺ l) n)
+    where
+        p1 : (n ·ᴺ (m +ᴺ l) +ᴺ n) ≡ (n ·ᴺ m +ᴺ n ·ᴺ l +ᴺ n)
+        p1 = ap (λ x → x +ᴺ n) (ℕ-distrib₁ n m l)
+
+ℕ-distrib₂ : (n m l : ℕ) → ((n +ᴺ m) ·ᴺ l) ≡ (n ·ᴺ l +ᴺ m ·ᴺ l)
+ℕ-distrib₂ n m zero = refl 0
+ℕ-distrib₂ n m (suc l) = trans p11 p10
+    where
+        p1 : ((n +ᴺ m) ·ᴺ l +ᴺ (n +ᴺ m)) ≡ (n ·ᴺ l +ᴺ m ·ᴺ l +ᴺ (n +ᴺ m))
+        p1 = ap (λ x → x +ᴺ (n +ᴺ m)) (ℕ-distrib₂ n m l)
+
+        p2 : (n ·ᴺ l +ᴺ m ·ᴺ l +ᴺ (n +ᴺ m)) ≡ (n ·ᴺ l +ᴺ m ·ᴺ l +ᴺ n +ᴺ m)
+        p2 = sym (+ᴺ-assoc (n ·ᴺ l +ᴺ m ·ᴺ l) n m)
+
+        p3 : ((n +ᴺ m) ·ᴺ l +ᴺ (n +ᴺ m)) ≡ (n ·ᴺ l +ᴺ m ·ᴺ l +ᴺ n +ᴺ m)
+        p3 = trans p1 p2
+
+        p4 : (n ·ᴺ l +ᴺ (m ·ᴺ l +ᴺ n)) ≡ (n ·ᴺ l +ᴺ (n +ᴺ m ·ᴺ l))
+        p4 = ap (λ x → (n ·ᴺ l) +ᴺ x) (+ᴺ-commut (m ·ᴺ l) n)
+
+        p5 : (n ·ᴺ l +ᴺ m ·ᴺ l +ᴺ n) ≡ (n ·ᴺ l +ᴺ (m ·ᴺ l +ᴺ n))
+        p5 = +ᴺ-assoc (n ·ᴺ l) (m ·ᴺ l) n
+        
+        p6 : (n ·ᴺ l +ᴺ (n +ᴺ m ·ᴺ l)) ≡ (n ·ᴺ l +ᴺ n +ᴺ m ·ᴺ l)
+        p6 = sym (+ᴺ-assoc (n ·ᴺ l) n  (m ·ᴺ l))
+
+        p7 : (n ·ᴺ l +ᴺ m ·ᴺ l +ᴺ n) ≡ (n ·ᴺ l +ᴺ (n +ᴺ m ·ᴺ l))
+        p7 = trans p5 p4
+        
+        p9 : (n ·ᴺ l +ᴺ m ·ᴺ l +ᴺ n +ᴺ m) ≡ (n ·ᴺ l +ᴺ n +ᴺ m ·ᴺ l +ᴺ m)
+        p9 = ap (λ x → x +ᴺ m) (trans p7 p6)
+
+        p10 : (n ·ᴺ l +ᴺ n +ᴺ m ·ᴺ l +ᴺ m) ≡ (n ·ᴺ l +ᴺ n +ᴺ (m ·ᴺ l +ᴺ m))
+        p10 = +ᴺ-assoc (n ·ᴺ l +ᴺ n) (m ·ᴺ l) m
+
+        p11 : ((n +ᴺ m) ·ᴺ l +ᴺ (n +ᴺ m)) ≡ (n ·ᴺ l +ᴺ n +ᴺ m ·ᴺ l +ᴺ m)
+        p11 = trans p3 p9
+
+·ᴺ-assoc : (n m l : ℕ) → ((n ·ᴺ m) ·ᴺ l) ≡ (n ·ᴺ (m ·ᴺ l))
+·ᴺ-assoc n m zero = refl 0
+·ᴺ-assoc n m (suc l) = trans p2 p1
+    where
+        p1 : n ·ᴺ (m ·ᴺ l) +ᴺ n ·ᴺ m ≡ n ·ᴺ (m ·ᴺ l +ᴺ m)
+        p1 = sym (ℕ-distrib₁ n  (m ·ᴺ l) m)
+        p2 : n ·ᴺ m ·ᴺ l +ᴺ n ·ᴺ m ≡ n ·ᴺ (m ·ᴺ l) +ᴺ n ·ᴺ m
+        p2 = ap (λ x → x +ᴺ n ·ᴺ m) (·ᴺ-assoc n m l)
+
+0-is-left-absorbing : (n : ℕ) → 0 ·ᴺ n ≡ 0
+0-is-left-absorbing zero = refl 0
+0-is-left-absorbing (suc n) = 0-is-left-absorbing n
+
+1-is-left-neutral : (n : ℕ) → 1 ·ᴺ n ≡ n
+1-is-left-neutral zero = refl zero
+1-is-left-neutral (suc n) = ap suc (1-is-left-neutral n)
+
+·ᴺ-commut : (n m : ℕ) → n ·ᴺ m ≡ m ·ᴺ n
+·ᴺ-commut n zero = sym (0-is-left-absorbing n)
+·ᴺ-commut n (suc m) = sym (trans p1 p4)
+    where
+        p1 : (suc m ·ᴺ n) ≡ (m ·ᴺ n +ᴺ 1 ·ᴺ n)
+        p1 = ℕ-distrib₂ m 1 n
+
+        p2 : (m ·ᴺ n +ᴺ 1 ·ᴺ n) ≡ (m ·ᴺ n +ᴺ n)
+        p2 = ap (λ x → m ·ᴺ n +ᴺ x) (1-is-left-neutral n)
+
+        p3 : (m ·ᴺ n +ᴺ n) ≡ (n ·ᴺ m +ᴺ n)
+        p3 = ap (λ x → x +ᴺ n) (·ᴺ-commut m n)
+
+        p4 : (m ·ᴺ n +ᴺ 1 ·ᴺ n) ≡ (n ·ᴺ m +ᴺ n)
+        p4 = trans p2 p3
 \end{code}
 
 \begin{thebibliography}{}
