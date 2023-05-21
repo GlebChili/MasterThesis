@@ -2018,6 +2018,27 @@ transport {i} {j} {A} {a} {a} C (refl a) = λ (x : C a) → x
 0-is-left-neutral (suc n) = ap suc (0-is-left-neutral n)
 \end{code}
 
+Докажем коммутативность и ассоциативность сложения.
+\begin{code}
++ᴺ-assoc : (n m l : ℕ) → ((n +ᴺ m) +ᴺ l) ≡ (n +ᴺ (m +ᴺ l))
++ᴺ-assoc n m zero = refl (n +ᴺ m)
++ᴺ-assoc n m (suc l) = ap suc (+ᴺ-assoc n m l)
+
++ᴺ-commute : (n m : ℕ) → (n +ᴺ m) ≡ (m +ᴺ n)
++ᴺ-commute n zero = sym (0-is-left-neutral n)
++ᴺ-commute n (suc m) = trans (ap suc (+ᴺ-commute n m)) p4
+    where
+        p1 : (n : ℕ) → (1 +ᴺ n) ≡ suc n
+        p1 zero = refl 1
+        p1 (suc n) = ap suc (p1 n)
+        p2 : (m +ᴺ (1 +ᴺ n)) ≡ ((suc m) +ᴺ n)
+        p2 = sym (+ᴺ-assoc m 1 n)
+        p3 : suc (m +ᴺ n) ≡ (m +ᴺ (1 +ᴺ n))
+        p3 = sym (ap (λ x → m +ᴺ x) (p1 n))
+        p4 : suc (m +ᴺ n) ≡ (suc m) +ᴺ n
+        p4 = trans p3 p2
+\end{code}
+
 \begin{thebibliography}{}
     \bibitem[SorUrz06]{SorUrz06}
     M. H. Sorensen, P. Urzycyn. \textit{Lectures on the Curry-Howard \\ Isomorphism.}
