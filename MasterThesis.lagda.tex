@@ -58,6 +58,7 @@
 \newunicodechar{Π}{\ensuremath{\mathnormal{\Pi}}}
 \newunicodechar{↔}{\ensuremath{\mathnormal{\leftrightarrow}}}
 \newunicodechar{≢}{\ensuremath{\mathnormal{\not \equiv}}}
+\newunicodechar{≤}{\ensuremath{\mathnormal{\leq}}}
 
 \newtheorem{theorem}{Теорема}
 \newtheorem{lemma}{Лемма}
@@ -1613,6 +1614,7 @@ id x = x
 \AgdaTarget{𝔹}
 \AgdaTarget{𝟘}
 \AgdaTarget{𝟙}
+\AgdaTarget{ℕ}
 \begin{code}
 data 𝟙 : 𝒰 where
     * : 𝟙
@@ -1936,6 +1938,8 @@ contr₂ {i} {j} {A} {B} (inr notB) notBtoNotA a = 𝟘-ELIM (λ x → B) p2
 _↔_ : {i j : Level} → 𝒰 i → 𝒰 j → 𝒰 (i ⊔ j)
 A ↔ B = (A → B) × (B → A)
 
+infixl -1 _↔_
+
 eProp₁ : {i : Level} → {A : 𝒰 i} → (A ↔ A)
 eProp₁ = ((λ x → x) , (λ x → x))
 
@@ -2141,6 +2145,106 @@ a ≢ b = ¬ (a ≡ b)
         p4 : (m ·ᴺ n +ᴺ 1 ·ᴺ n) ≡ (n ·ᴺ m +ᴺ n)
         p4 = trans p2 p3
 \end{code}
+
+Как мы все хорошо знаем, на натуральных числах есть естественная структура линейного порядка. Определим
+её и на типе \AgdaDatatype{ℕ} с помощью следующего зависимого типа:
+\begin{code}
+_≤_ : ℕ → ℕ → 𝒰
+zero ≤ y = 𝟙
+suc x ≤ zero = 𝟘
+suc x ≤ suc y = x ≤ y
+
+_<_ : ℕ → ℕ → 𝒰
+x < y = (suc x) ≤ y
+
+0-is-minimal : (n : ℕ) → (0 ≤ n)
+0-is-minimal zero = *
+0-is-minimal (suc n) = *
+
+≤-is-reflexive : (n : ℕ) → (n ≤ n)
+≤-is-reflexive zero = *
+≤-is-reflexive (suc n) = ≤-is-reflexive n
+
+≤-is-transitive : {n m k : ℕ} → (n ≤ m) → (m ≤ k) → (n ≤ k)
+≤-is-transitive {zero} {m} {zero} f s = *
+≤-is-transitive {suc n} {zero} {zero} f s = f
+≤-is-transitive {suc n} {suc m} {zero} f s = s
+≤-is-transitive {zero} {m} {suc k} f s = *
+≤-is-transitive {suc n} {suc m} {suc k} f s = ≤-is-transitive {n} {m} {k} f s
+
+≤-is-antisymmetric : (n m : ℕ) → (n ≤ m) → (m ≤ n) → (n ≡ m)
+≤-is-antisymmetric zero zero f s = refl 0
+≤-is-antisymmetric (suc n) (suc m) f s = ap suc (≤-is-antisymmetric n m f s)
+
+≤-is-linear : (n m : ℕ) → (n ≤ m) ∔ (m ≤ n)
+≤-is-linear n zero = inr *
+≤-is-linear zero (suc m) = inl *
+≤-is-linear (suc n) (suc m) = ≤-is-linear n m
+\end{code}
+Естественно, заданный таким образом порядок согласован со сложением и умножением. Более того,
+мы, на самом деле, можем вывести теоретико-типовые аналоги аксиом арифметики Гейтинга:
+\begin{code}
+M1 : (x : ℕ) → suc x ≢ 0
+M1 x eq = p *
+    where
+        p : 𝟙 → 𝟘
+        p = transport ℕ-to-𝒰 eq
+
+M2 : (x y : ℕ) → suc x ≡ suc y → x ≡ y
+M2 zero zero eq = refl 0
+M2 (suc x) (suc y) eq = p (suc (suc x)) (suc (suc y)) eq
+    where
+        pred : ℕ → ℕ
+        pred zero = 0
+        pred (suc n) = n
+
+        p : (n m : ℕ) → n ≡ m → pred n ≡ pred m
+        p n m eq = ap pred eq
+
+M3 : (x : ℕ) → (x +ᴺ 0) ≡ x
+M3 x = refl x
+
+M4 : (x y : ℕ) → x +ᴺ (suc y) ≡ suc (x +ᴺ y)
+M4 x y = refl (suc (x +ᴺ y))
+
+M5 : (x : ℕ) → x ·ᴺ 0 ≡ 0
+M5 x = refl 0
+
+M6 : (x y : ℕ) → x ·ᴺ (suc y) ≡ (x ·ᴺ y) +ᴺ x
+M6 x y = refl (x ·ᴺ y +ᴺ x)
+
+M7 : (x : ℕ) → ¬ (x < 0)
+M7 x ineq = ineq
+
+M8' : (x y : ℕ) → x < (suc y) → (x < y) ∔ (x ≡ y)
+M8' zero zero ineq = inr (refl 0)
+M8' zero (suc y) ineq = inl ineq
+M8' (suc x) (suc y) ineq = p x y (M8' x y ineq)
+    where
+        p : (x y : ℕ) → (x < y) ∔ (x ≡ y) → (suc x < suc y) ∔ (suc x ≡ suc y)
+        p x y (inl ineq) = inl ineq
+        p x y (inr eq) = inr (ap suc eq)
+
+M8'' : (x y : ℕ) → (x < y) ∔ (x ≡ y) → x < (suc y)
+M8'' x (suc y) (inl ineq) = ≤-is-transitive {x} {y} {suc y} ineq (p y)
+    where
+        p : (n : ℕ) → n ≤ suc n
+        p zero = *
+        p (suc n) = p n
+        
+M8'' x y (inr eq) = p x y eq
+    where
+        p : (n m : ℕ) → n ≡ m → n ≤ m
+        p zero zero = λ x → *
+        p (suc n) zero = λ () -- паттерн "абсурд"
+        p zero (suc m) = λ x → *
+        p (suc n) (suc m) eq = p n m (M2 n m eq)
+
+M8 : (x y : ℕ) → x < (suc y) ↔ (x < y) ∔ (x ≡ y)
+M8 x y = (M8' x y , M8'' x y)
+\end{code}
+Заметим, что аналог принципа индукции \dash это не что иное как \AgdaFunction{ℕ-ELIM}, а значит
+мы можем воспроивести любое рассуждение из арифметики Гейтинга в $MLTT$ и имплементировать в Agda.
 
 \begin{thebibliography}{}
     \bibitem[SorUrz06]{SorUrz06}
