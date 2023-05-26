@@ -2300,6 +2300,56 @@ data _≤'_ : ℕ → ℕ → 𝒰 where
 ≤'-and-≤-are-equivalent n m = (≤'-to-≤ n m , ≤-to-≤' n m)
 \end{code}
 
+До этого мы работали только с заранее определнными типами (зависимое произведение, универсумы, индуктивные типы).
+Естетсвенно завершить наш разговор об основных конструкциях примерами формализации утверждений о целых классах
+объектов. Сделаем мы это на примере теории групп.
+
+Для начала мы определим структуру предгруппы на типе $X$, состоящую из бинарной операции, унарной операции и
+выделенного терма.
+\begin{code}
+pregroup : {i : Level} → 𝒰 i → 𝒰 i
+pregroup X = (X → X → X) × (X → X) × X
+
+binOp : {i : Level} → {X : 𝒰 i} → pregroup X → (X → X → X)
+binOp ((x , y) , z) = x
+
+unaryOp : {i : Level} → {X : 𝒰 i} → pregroup X → (X → X)
+unaryOp ((x , y) , z) = y
+
+neutral : {i : Level} → {X : 𝒰 i} → pregroup X → X
+neutral ((x , y) , z) = z
+\end{code}
+Тип $X$ назывется группой, если для него существует структура предгруппы, удовлетворяющая теоретико-типовым
+аналогам классических аксиом теории групп.
+\begin{code}
+groupAssoc : {i : Level} → (X : 𝒰 i) → (P : pregroup X) → 𝒰 i
+groupAssoc X P = (x y z : X) → ((x · y) · z) ≡ (x · (y · z))
+    where
+        _·_ : X → X → X
+        _·_ = binOp P
+
+neutralElement : {i : Level} → (X : 𝒰 i) → (P : pregroup X) → 𝒰 i
+neutralElement X P = (x : X) → (x · e ≡ x) × (e · x ≡ x)
+    where
+        _·_ : X → X → X
+        _·_ = binOp P
+        e : X
+        e = neutral P
+
+groupInverse : {i : Level} → (X : 𝒰 i) → (P : pregroup X) → 𝒰 i
+groupInverse X P = (x : X) → (x · (inv x) ≡ e) × ((inv x) · x ≡ e)
+    where
+        _·_ : X → X → X
+        _·_ = binOp P
+        e : X
+        e = neutral P
+        inv : X → X
+        inv = unaryOp P
+
+Group : {i : Level} → (X : 𝒰 i) → 𝒰 i
+Group X = Σ (pregroup X) (λ P → (groupAssoc X P × groupInverse X P × neutralElement X P))
+\end{code}
+
 \begin{thebibliography}{}
     \bibitem[SorUrz06]{SorUrz06}
     M. H. Sorensen, P. Urzycyn. \textit{Lectures on the Curry-Howard \\ Isomorphism.}
