@@ -61,6 +61,7 @@
 \newunicodechar{≤}{\ensuremath{\mathnormal{\leq}}}
 \newunicodechar{∷}{\ensuremath{\mathnormal{::}}}
 \newunicodechar{ᴳ}{\ensuremath{\mathnormal{{}^G}}}
+\newunicodechar{ᴮ}{\ensuremath{\mathnormal{{}^B}}}
 
 \newtheorem{theorem}{Теорема}
 \newtheorem{lemma}{Лемма}
@@ -2416,6 +2417,118 @@ Grp-and-Group-are-equivalent : {i : Level} → (X : 𝒰 i) → Grp X ↔ Group 
 Grp-and-Group-are-equivalent X = (Grp-to-Group X , Group-to-Grp X)
 \end{code}
 
+Покажем, что как минимум одна группа действительно существует в нашей теории. Для этого наделим
+тип \AgdaDatatype{𝔹} операцией сложения по модулю два.
+\begin{code}
+_+ᴮ_ : 𝔹 → 𝔹 → 𝔹
+𝔽 +ᴮ 𝔽 = 𝔽
+𝔽 +ᴮ 𝕋 = 𝕋
+𝕋 +ᴮ 𝔽 = 𝕋
+𝕋 +ᴮ 𝕋 = 𝔽
+
+invᴮ : 𝔹 → 𝔹
+invᴮ 𝔽 = 𝔽
+invᴮ 𝕋 = 𝕋
+
+𝔹-is-a-group : Grp 𝔹
+𝔹-is-a-group = record {_·ᴳ_ = _+ᴮ_;
+                       inv = invᴮ;
+                       e = 𝔽;
+                       assocProp = p1;
+                       neutralProp₁ = p2;
+                       neutralProp₂ = p3;
+                       invProp₁ = p4;
+                       invProp₂ = p5}
+    where
+        p1 : (x y z : 𝔹) → ((x +ᴮ y) +ᴮ z) ≡ (x +ᴮ (y +ᴮ z))
+        p1 𝔽 𝔽 𝔽 = refl 𝔽
+        p1 𝕋 𝔽 𝔽 = refl 𝕋
+        p1 𝔽 𝕋 𝔽 = refl 𝕋
+        p1 𝕋 𝕋 𝔽 = refl 𝔽
+        p1 𝔽 𝔽 𝕋 = refl 𝕋
+        p1 𝕋 𝔽 𝕋 = refl 𝔽
+        p1 𝔽 𝕋 𝕋 = refl 𝔽
+        p1 𝕋 𝕋 𝕋 = refl 𝕋
+
+        p2 : (x : 𝔹) → (𝔽 +ᴮ x) ≡ x
+        p2 𝔽 = refl 𝔽
+        p2 𝕋 = refl 𝕋
+
+        p3 : (x : 𝔹) → (x +ᴮ 𝔽) ≡ x
+        p3 𝔽 = refl 𝔽
+        p3 𝕋 = refl 𝕋
+
+        p4 : (x : 𝔹) → (invᴮ x +ᴮ x) ≡ 𝔽
+        p4 𝔽 = refl 𝔽
+        p4 𝕋 = refl 𝔽
+
+        p5 : (x : 𝔹) → (x +ᴮ invᴮ x) ≡ 𝔽
+        p5 𝔽 = refl 𝔽
+        p5 𝕋 = refl 𝔽
+\end{code}
+
+Теперь, пользуясь определением группы через \AgdaDatatype{Grp}, докажем пару основных фактов
+из теории групп. Во-первых, покажем, что нейтральный элемент единственен.
+\AgdaTarget{e-is-unique}
+\begin{code}
+e-is-unique : {i : Level} → (X : 𝒰 i) → {{grpX : Grp X}} 
+              → (y : X) 
+              → ((x : X) → (x ·ᴳ y ≡ x) × (y ·ᴳ x ≡ x))
+              → y ≡ e
+e-is-unique X y prop = trans p2 p1
+    where
+        p1 : e ·ᴳ y ≡ e
+        p1 = pr₁ (prop e)
+
+        p2 : y ≡ e ·ᴳ y
+        p2 = sym (neutralProp₁ y)
+\end{code}
+(Здесь в двойных фигурных скобках мы передаём так называемый параметр класса (Instance Argument).
+Эта синтаксическая конструкция позволяет применять термы, объявленные в записи \AgdaDatatype{Grp}
+непосредственно к термам типа $X$. В частности, мы можем писать $x \cdot^G y$ вместо
+$(Grp.\cdot^G \; grpX) \; x \; y$.) Во-вторых, покажем что обратный элемент единственен для любого
+$x$ из группы.
+\AgdaTarget{inv-is-unique}
+\begin{code}
+inv-is-unique : {i : Level} → (X : 𝒰 i) → {{grpX : Grp X}} 
+                → (x : X)
+                → (y : X) 
+                → (x ·ᴳ y ≡ e) × (y ·ᴳ x ≡ e)
+                → y ≡ (inv x)
+inv-is-unique X x y (prop₁ , prop₂) = trans p6 p2
+    where
+        p1 : (inv x) ·ᴳ (x ·ᴳ y) ≡ (inv x) ·ᴳ e
+        p1 = ap (λ w → (inv x) ·ᴳ w) prop₁
+
+        p2 : (inv x) ·ᴳ (x ·ᴳ y) ≡ (inv x)
+        p2 = trans p1 (neutralProp₂ (inv x))
+
+        p3 : ((inv x) ·ᴳ x) ·ᴳ y ≡ (inv x) ·ᴳ (x ·ᴳ y)
+        p3 = assocProp (inv x) x y
+
+        p4 : e ·ᴳ y ≡ ((inv x) ·ᴳ x) ·ᴳ y
+        p4 = ap (λ w → w ·ᴳ y) (sym (invProp₁ x))
+
+        p5 : y ≡ ((inv x) ·ᴳ x) ·ᴳ y
+        p5 = trans (sym (neutralProp₁ y)) p4
+
+        p6 : y ≡ (inv x) ·ᴳ (x ·ᴳ y)
+        p6 = trans p5 p3
+\end{code}
+
+Естественно, мы можем доказать частный случай теорем о единственности для \AgdaDatatype{𝔹} с помощью
+\AgdaFunction{e-is-unique} и \AgdaFunction{inv-is-unique}:
+\begin{code}
+𝔹-neutral-element : (y : 𝔹) → ((x : 𝔹) → (x +ᴮ y ≡ x) × (y +ᴮ x ≡ x))
+                    → y ≡ 𝔽
+𝔹-neutral-element y prop = e-is-unique 𝔹 {{𝔹-is-a-group}} y prop
+
+𝔹-inverse : (x : 𝔹) → (y : 𝔹)
+            → (x +ᴮ y ≡ 𝔽) × (y +ᴮ x ≡ 𝔽)
+            → y ≡ (invᴮ x)
+𝔹-inverse x y prop = inv-is-unique 𝔹 {{𝔹-is-a-group}} x y prop
+\end{code}
+
 \begin{thebibliography}{}
     \bibitem[SorUrz06]{SorUrz06}
     M. H. Sorensen, P. Urzycyn. \textit{Lectures on the Curry-Howard \\ Isomorphism.}
@@ -2439,4 +2552,4 @@ Grp-and-Group-are-equivalent X = (Grp-to-Group X , Group-to-Grp X)
     Version: first-edition-1357-gde0b8e22.
 \end{thebibliography}
 
-\end{document}   
+\end{document}
