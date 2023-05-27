@@ -60,6 +60,7 @@
 \newunicodechar{≢}{\ensuremath{\mathnormal{\not \equiv}}}
 \newunicodechar{≤}{\ensuremath{\mathnormal{\leq}}}
 \newunicodechar{∷}{\ensuremath{\mathnormal{::}}}
+\newunicodechar{ᴳ}{\ensuremath{\mathnormal{{}^G}}}
 
 \newtheorem{theorem}{Теорема}
 \newtheorem{lemma}{Лемма}
@@ -2347,13 +2348,73 @@ groupInverse X P = (x : X) → (x · (inv x) ≡ e) × ((inv x) · x ≡ e)
         inv = unaryOp P
 
 Group : {i : Level} → (X : 𝒰 i) → 𝒰 i
-Group X = Σ (pregroup X) (λ P → (groupAssoc X P × groupInverse X P × neutralElement X P))
+Group X = Σ (pregroup X) 
+            (λ P → (groupAssoc X P × groupInverse X P × neutralElement X P))
 \end{code}
 
 Как мы можем видеть, такое определение группы через $\Sigma$-тип получается довольно громоздким
 и неудобным. Чтобы избавится от подобного рода нагромождений, в Agda 2 была добавлена поддержка
 индуктивных записей: специальное обобщение типов зависимой суммы и ко-произведения, в котором мы можем
 объявлять именованные поля.
+\AgdaTarget{Grp}
+\begin{code}
+record Grp {i : Level} (X : 𝒰 i) : 𝒰 i where
+    inductive
+    field
+        _·ᴳ_ : X → X → X
+        inv : X → X
+        e : X
+        assocProp : (x y z : X) → ((x ·ᴳ y) ·ᴳ z) ≡ (x ·ᴳ (y ·ᴳ z))
+        neutralProp₁ : (x : X) → e ·ᴳ x ≡ x
+        neutralProp₂ : (x : X) → x ·ᴳ e ≡ x
+        invProp₁ : (x : X) → (inv x) ·ᴳ x ≡ e
+        invProp₂ : (x : X) → x ·ᴳ (inv x) ≡ e
+
+open Grp {{...}} renaming (_·ᴳ_ to infixl 10 _·ᴳ_) public
+\end{code}
+Определения группы через $\Sigma$-тип и через индуктивную запись логически эквивалентны.
+\AgdaTarget{pr₁}
+\AgdaTarget{pr₂}
+\begin{code}
+-- Определим проекции для более удобной работы
+-- с типом зависимой суммы
+pr₁ : {i j : Level} → {A : 𝒰 i} → {B : A → 𝒰 j}
+      → Σ A B → A
+pr₁ (a , ba) = a
+
+pr₂ : {i j : Level} → {A : 𝒰 i} → {B : A → 𝒰 j}
+      → (s : Σ A B) → B (pr₁ s)
+pr₂ (a , ba) = ba
+
+Group-to-Grp : {i : Level} → (X : 𝒰 i) → Group X → Grp X
+Group-to-Grp X (((bOp , uOp) , neut) , (x , y) , z) = 
+    record {_·ᴳ_ = bOp;
+            inv = uOp;
+            e = neut;
+            assocProp = x;
+            neutralProp₁ = λ w → pr₂ (z w);
+            neutralProp₂ = λ w → pr₁ (z w);
+            invProp₁ = λ w → pr₂ (y w);
+            invProp₂ = λ w → pr₁ (y w)}
+
+Grp-to-Group : {i : Level} → (X : 𝒰 i) → Grp X → Group X
+Grp-to-Group X grp = (preG , ((gAssoc , gInv) , gNeutral))
+    where
+        preG : pregroup X
+        preG = ((Grp._·ᴳ_ grp , Grp.inv grp) , Grp.e grp)
+
+        gAssoc : groupAssoc X preG
+        gAssoc = Grp.assocProp grp
+
+        gNeutral : neutralElement X preG
+        gNeutral x = ((Grp.neutralProp₂ grp) x , (Grp.neutralProp₁ grp) x)
+
+        gInv : groupInverse X preG
+        gInv x = ((Grp.invProp₂ grp) x , (Grp.invProp₁ grp) x)
+
+Grp-and-Group-are-equivalent : {i : Level} → (X : 𝒰 i) → Grp X ↔ Group X
+Grp-and-Group-are-equivalent X = (Grp-to-Group X , Group-to-Grp X)
+\end{code}
 
 \begin{thebibliography}{}
     \bibitem[SorUrz06]{SorUrz06}
@@ -2378,4 +2439,4 @@ Group X = Σ (pregroup X) (λ P → (groupAssoc X P × groupInverse X P × neutr
     Version: first-edition-1357-gde0b8e22.
 \end{thebibliography}
 
-\end{document}  
+\end{document}   
