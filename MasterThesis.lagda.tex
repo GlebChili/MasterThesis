@@ -63,6 +63,8 @@
 \newunicodechar{ᴳ}{\ensuremath{\mathnormal{{}^G}}}
 \newunicodechar{ᴮ}{\ensuremath{\mathnormal{{}^B}}}
 \newunicodechar{∼}{\ensuremath{\mathnormal{\sim}}}
+\newunicodechar{∘}{\ensuremath{\mathnormal{\circ}}}
+\newunicodechar{≃}{\ensuremath{\mathnormal{\simeq}}}
 
 \newtheorem{theorem}{Теорема}
 \newtheorem{lemma}{Лемма}
@@ -72,6 +74,7 @@
 
 \newcommand{\dash}{\textemdash\ }
 \newcommand{\ind}{\operatorname{ind}}
+\newcommand{\op}{\operatorname}
 
 \title{Гомотопическая теория типов и ее модели}
 \author{Глеб Красилич}
@@ -2664,19 +2667,125 @@ refl-htpy : {i j : Level} → {A : 𝒰 i} → {B : A → 𝒰 j}
 refl-htpy f = λ x → refl (f x)
 
 sym-htpy : {i j : Level} → {A : 𝒰 i} → {B : A → 𝒰 j}
-           → (f : (x : A) → B x)
-           → (g : (x : A) → B x)
+           → {f : (x : A) → B x}
+           → {g : (x : A) → B x}
            → f ∼ g → g ∼ f
-sym-htpy f g h = λ x → sym (h x)
+sym-htpy {i} {j} {A} {B} {f} {g} h = λ x → sym (h x)
 
 trans-htpy : {i j : Level} → {A : 𝒰 i} → {B : A → 𝒰 j}
-             → (f : (x : A) → B x)
-             → (g : (x : A) → B x)
-             → (h : (x : A) → B x)
+             → {f : (x : A) → B x}
+             → {g : (x : A) → B x}
+             → {h : (x : A) → B x}
              → f ∼ g → g ∼ h
              → f ∼ h
-trans-htpy f g h h₁ h₂ = λ x → trans (h₁ x) (h₂ x)
+trans-htpy {i} {j} {A} {B} {f} {g} {h} h₁ h₂ = λ x → trans (h₁ x) (h₂ x)
 \end{code}
+
+\begin{definition}
+    \label{EquivalenceDefinition}
+    Пусть $f : A \rightarrow B$ \dash функция (терм $B$ не зависит от аргумента). $f$ называется
+    эквивалентностью между типами $A$ и $B$, если существуют такие $g, h : B \rightarrow A$,
+    что $f \circ g \sim id_A$ и $h \circ f \sim id_B$.
+\end{definition}
+\begin{code}
+_∘_ : {i j k : Level} → {A : 𝒰 i} → {B : 𝒰 j} → {C : 𝒰 k}
+      → (f : B → C) → (g : A → B)
+      → (A → C) -- композиция функций
+f ∘ g = λ x → f (g x)
+
+infixl 10 _∘_
+
+record is-equiv {i j : Level} {A : 𝒰 i} {B : 𝒰 j} (f : A → B) : 𝒰 (i ⊔ j) where
+    inductive
+    field
+        inv₁ : B → A
+        inv₂ : B → A
+        homotopy₁ : (f ∘ inv₁) ∼ id
+        homotopy₂ : (inv₂ ∘ f) ∼ id
+\end{code}
+
+\begin{definition}
+    \label{TypeEquivalenceDefinition}
+    Пусть $A$ и $B$ \dash типы. Мы говорим, что $A$ эквивалентен $B$ и пишем $A \simeq B$,
+    если существует эквивалентность $f : A \rightarrow B$.
+\end{definition}
+\begin{code}
+_≃_ : {i j : Level} → 𝒰 i → 𝒰 j → 𝒰 (i ⊔ j)
+A ≃ B = Σ (A → B) (λ f → is-equiv f)
+\end{code}
+
+\begin{definition}
+    \label{InvertibleDefinition}
+    Пусть $f : A \rightarrow B$ \dash функция. $f$ называется обратимой, если существует такое 
+    $g : B \rightarrow A$, что $f \circ g \sim id_B$ и $g \circ f \sim id_A$.
+\end{definition}
+\begin{code}
+record is-invertible {i j : Level} {A : 𝒰 i} {B : 𝒰 j} (f : A → B) : 𝒰 (i ⊔ j) where
+    inductive
+    field
+        inv : B → A
+        homotopy₁ : (f ∘ inv) ∼ id
+        homotopy₂ : (inv ∘ f) ∼ id
+\end{code}
+
+На первый взгляд кажется, что условие $\op{is-invertible}(f)$ сильнее, чем условие $\op{is-equiv}(f)$, но при более
+тщательном рассмотрении становится понятно, что это не так.
+
+\begin{theorem}
+    \label{EquivAndInverseAreSameTheorem}
+    Пусть $f : A \rightarrow B$ \dash функция. Тогда $\op{is-equiv}(f)$ и $\op{is-invertible}(f)$
+    логически эквивалентны:
+    $$\op{is-equiv}(f) \leftrightarrow \op{is-invertible}(f)$$
+\end{theorem}
+\begin{proof}
+Отображение справа налево очевидно: мы просто положим $\op{inv}_1$ и $\op{inv}_2$ 
+в $\op{is-equiv}(f)$ равными $\op{inv}$ из $\op{is-invertible}(f)$.
+\begin{code}
+invertible-to-equiv : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+                      → (f : A → B) → is-invertible f
+                      → is-equiv f
+invertible-to-equiv f invProof = 
+    record {inv₁ = is-invertible.inv invProof;
+            inv₂ = is-invertible.inv invProof;
+            homotopy₁ = is-invertible.homotopy₁ invProof;
+            homotopy₂ = is-invertible.homotopy₂ invProof}
+\end{code}
+
+Обратно, пусть у нас есть $\op{is-equiv}(f)$. Мы докажем, что в таком случае $\op{inv}_1 \sim \op{inv}_2$, и
+с помощью этого факта покажем, что $\op{inv}_1$ является обратной функцией для $f$.
+\begin{code}
+equiv-to-invertible : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+                      → (f : A → B) → is-equiv f
+                      → is-invertible f
+equiv-to-invertible {i} {j} {A} {B} f equivProof = 
+    record {inv = g;
+            homotopy₁ = is-equiv.homotopy₁ equivProof;
+            homotopy₂ = λ a → trans (p4 (f a)) ((is-equiv.homotopy₂ equivProof) a)}
+    where
+        g : B → A
+        g = is-equiv.inv₁ equivProof
+
+        h : B → A
+        h = is-equiv.inv₂ equivProof
+
+        p1 : g ∼ (h ∘ f ∘ g)
+        p1 = λ b → sym ((is-equiv.homotopy₂ equivProof) (g b))
+
+        p2 : (h ∘ (f ∘ g)) ∼ h
+        p2 = λ b → ap h ((is-equiv.homotopy₁ equivProof) b)
+
+        p3 : (h ∘ f ∘ g) ∼ (h ∘ (f ∘ g))
+        p3 = λ b → refl (h (f (g b)))
+
+        p4 : g ∼ h
+        p4 = trans-htpy p1 (trans-htpy p3 p2)
+
+equiv↔invertible : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+                   → (f : A → B)
+                   → (is-equiv f ↔ is-invertible f)
+equiv↔invertible f = (equiv-to-invertible f , invertible-to-equiv f)
+\end{code}
+\end{proof}
 
 \begin{thebibliography}{}
     \bibitem[SorUrz06]{SorUrz06}
