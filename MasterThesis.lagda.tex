@@ -2787,6 +2787,36 @@ equiv↔invertible f = (equiv-to-invertible f , invertible-to-equiv f)
 \end{code}
 \end{proof}
 
+\begin{definition}
+    \label{ContractibleTypeDefinition}
+    Пусть $X$ \dash тип. $X$ называется стягиваемым, если существует такой $c : X$, называемый
+    центром стягивания, что для любого $x : X$ $c \equiv x$.
+\end{definition}
+\begin{code}
+is-contractible : {i : Level} → (X : 𝒰 i) → 𝒰 i
+is-contractible X = Σ X (λ c → ((x : X) → c ≡ x))
+\end{code}
+
+\begin{definition}
+    \label{ContractibleMapDefinition}
+    Пусть $f : A \rightarrow B$ \dash функция и $b$ \dash терм из $B$.
+    Слоем $f$ над $b$ называется тип
+    $$\sum_{a : A} f(a) \equiv b$$
+
+    Функция $f$ называется стягиваемой, если каждый её слой стягиваем.
+\end{definition}
+\begin{code}
+fib : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j} 
+      → (f : A → B) → (b : B)
+      → 𝒰 (i ⊔ j)
+fib {i} {j} {A} {B} f b = Σ A (λ a → (f a) ≡ b)
+
+is-contractible-map : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+                      → (f : A → B)
+                      → 𝒰 (i ⊔ j)
+is-contractible-map {i} {j} {A} {B} f = (b : B) → is-contractible (fib f b)
+\end{code}
+
 \begin{thebibliography}{}
     \bibitem[SorUrz06]{SorUrz06}
     M. H. Sorensen, P. Urzycyn. \textit{Lectures on the Curry-Howard \\ Isomorphism.}
