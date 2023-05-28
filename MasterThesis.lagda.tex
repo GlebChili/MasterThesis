@@ -1973,23 +1973,35 @@ eProp₃ {i} {j} {A} {B} lemA lemB = (eProp₂ , p)
 Покажем, что благодаря принципу элиминации, для типа \AgdaDatatype{≡} выполнены и другие
 естественные законы, такие как симметричность и транзитивность.
 \begin{code}
-sym : {i : Level} → {A : 𝒰 i} → {a b : A} → a ≡ b → b ≡ a
-sym {i} {A} {a} {b} = ≡-ELIM (λ x y p → y ≡ x) (λ z → refl z) a b
+sym' : {i : Level} → {A : 𝒰 i} → {a b : A} → a ≡ b → b ≡ a
+sym' {i} {A} {a} {b} = ≡-ELIM (λ x y p → y ≡ x) (λ z → refl z) a b
 
-trans : {i : Level} → {A : 𝒰 i} → {a b c : A}
+trans' : {i : Level} → {A : 𝒰 i} → {a b c : A}
         → a ≡ b → b ≡ c → a ≡ c
-trans {i} {A} {a} {b} {c} = ≡-ELIM (λ x y p → y ≡ c → x ≡ c) 
+trans' {i} {A} {a} {b} {c} = ≡-ELIM (λ x y p → y ≡ c → x ≡ c) 
                                    (λ (z : A) (p' : z ≡ c) → p') a b
 \end{code}
 Но опять же, эти законы гораздо проще вывести не используя явно терм-элиминатор,
 а используя сопоставление с образцом:
 \begin{code}
-sym' : {i : Level} → {A : 𝒰 i} → {a b : A} → a ≡ b → b ≡ a
-sym' {i} {A} {a} {a} (refl a) = refl a
+sym : {i : Level} → {A : 𝒰 i} → {a b : A} → a ≡ b → b ≡ a
+sym {i} {A} {a} {a} (refl a) = refl a
 
-trans' : {i : Level} → {A : 𝒰 i} → {a b c : A}
+trans : {i : Level} → {A : 𝒰 i} → {a b c : A}
         → a ≡ b → b ≡ c → a ≡ c
-trans' {i} {A} {b} {b} {b} (refl b) (refl b) = refl b
+trans {i} {A} {a} {a} {c} (refl a) e2 = e2
+
+left-trans-unit : {i : Level} → {A : 𝒰 i} -- пригодится
+                  → {x y : A}
+                  → (p : x ≡ y)
+                  → (trans (refl x) p) ≡ p
+left-trans-unit {i} {A} {x} {.x} (refl .x) = refl (refl x)
+
+right-trans-unit : {i : Level} → {A : 𝒰 i} -- пригодится
+                  → {x y : A}
+                  → (p : x ≡ y)
+                  → (trans p (refl y)) ≡ p
+right-trans-unit {i} {A} {x} {.x} (refl .x) = refl (refl x)
 \end{code}
 
 Напомним, что в логике первого порядка, отношение равенства задаётся (помимо условий
@@ -2007,7 +2019,7 @@ ap {i} {j} {A} {B} {a} {a} f (refl a) = refl (f a)
 
 transport : {i j : Level} → {A : 𝒰 i}  → {a b : A} → (C : A → 𝒰 j)
             → a ≡ b → (C a → C b)
-transport {i} {j} {A} {a} {a} C (refl a) = λ (x : C a) → x
+transport {i} {j} {A} {a} {.a} C (refl .a) ca = ca
 \end{code}
 
 Перейдём к формализации и доказательству свойств натуральных чисел. Начнём с того, что в нашей теории типов
@@ -2679,6 +2691,18 @@ trans-htpy : {i j : Level} → {A : 𝒰 i} → {B : A → 𝒰 j}
              → f ∼ g → g ∼ h
              → f ∼ h
 trans-htpy {i} {j} {A} {B} {f} {g} {h} h₁ h₂ = λ x → trans (h₁ x) (h₂ x)
+
+left-unit-htpy : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+                 → {f : A → B} → {g : A → B}
+                 → (H : f ∼ g)
+                 → (trans-htpy (refl-htpy f) H) ∼ H
+left-unit-htpy {i} {j} {A} {B} {f} {g} H x = refl (H x)
+
+right-unit-htpy : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+                  → {f : A → B} → {g : A → B}
+                  → (H : f ∼ g)
+                  → (trans-htpy H (refl-htpy g)) ∼ H
+right-unit-htpy {i} {j} {A} {B} {f} {g} H x = right-trans-unit (H x)
 \end{code}
 
 \begin{definition}
@@ -2817,6 +2841,182 @@ is-contractible-map : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
 is-contractible-map {i} {j} {A} {B} f = (b : B) → is-contractible (fib f b)
 \end{code}
 
+\begin{theorem}
+    \label{EquivalenceIffContractibleTheorem}
+    Пусть $f : A \rightarrow B$ \dash функция. Тогда
+    $$\op{is-equiv}(f) \leftrightarrow \op{is-contractible-map}(f)$$
+\end{theorem}
+\begin{proof}
+Построим функцию справа налево. Для этого построим функцию $g : B \rightarrow A$,
+которая переводит всякий $b$ в центр стягивания слоя $\op{fib}(f, b)$ и покажем, 
+что она является двухсторонним обращением для $f$.
+\begin{code}
+contractible-to-equiv : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+                        → (f : A → B)
+                        → is-contractible-map f
+                        → is-equiv f
+contractible-to-equiv {i} {j} {A} {B} f contrProof = 
+    record {
+        inv₁ = g;
+        inv₂ = g;
+        homotopy₁ = p1;
+        homotopy₂ = p5
+    }
+    where
+        g : B → A
+        g b = pr₁ (pr₁ (contrProof b))
+
+        p1 : (f ∘ g) ∼ id
+        p1 b = pr₂ (pr₁ (contrProof b))
+
+        p2 : (f ∘ (g ∘ f)) ∼ f
+        p2 a = p1 (f a)
+
+        p3 : (x : A) → (s₁ : fib f (f x)) → (s₂ : fib f (f x))
+             → s₁ ≡ s₂
+        p3 x s₁ s₂ = trans (sym ((pr₂ (contrProof (f x))) s₁)) ((pr₂ (contrProof (f x))) s₂)
+
+        p4 : (x : A) → (g (f x), p2 x) ≡ (x , refl (f x))
+        p4 x = p3 x (g (f x), p2 x) (x , refl (f x))
+
+        p5 : (g ∘ f) ∼ id
+        p5 x = ap pr₁ (p4 x)
+\end{code}
+
+Построим отображение в обратную сторону. Для это введем несколько технических определений.
+Во-первых, сформулируем тип равенства в слоях:
+\begin{code}
+Eq-fib : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+         → (f : A → B)
+         → (y : B)
+         → (x : A)
+         → (p : f x ≡ y)
+         → (x' : A)
+         → (p' : f x' ≡ y)
+         → 𝒰 (i ⊔ j)
+Eq-fib {i} {j} {A} {B} f y x p x' p' = Σ (x ≡ x') (λ a → p ≡ trans (ap f a) p')
+\end{code}
+Заметим, что $\op{Eq-fib}$ задаёт рефлексивное отношение.
+\begin{code}
+Eq-fib-refl : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+              → (f : A → B)
+              → (y : B)
+              → (x : A)
+              → (p : f x ≡ y)
+              → Eq-fib f y x p x p
+Eq-fib-refl f y x p = (refl x , refl p)
+\end{code}
+Это в частности означает, что у нас есть отображение из типа равенства в слое в $\op{Eq-fib-refl}$.
+\begin{code}
+fibEq-to-EqFib : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+                 → (f : A → B)
+                 → (y : B)
+                 → (x : A) → (p : f x ≡ y)
+                 → (x' : A) → (p' : f x' ≡ y)
+                 → (x , p) ≡ (x' , p')
+                 → Eq-fib f y x p x' p'
+fibEq-to-EqFib f y x p .x .p (refl .(x , p)) = (refl x , refl p)
+\end{code}
+Более, того $\op{fibEq-to-EqFib}$ является обратимой функцией. Действительно, явно построим
+обратную функцию
+\begin{code}
+EqFib-to-fibEq : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+                 → (f : A → B)
+                 → (y : B)
+                 → (x : A) → (p : f x ≡ y)
+                 → (x' : A) → (p' : f x' ≡ y)
+                 → Eq-fib f y x p x' p'
+                 → (x , p) ≡ (x' , p')
+EqFib-to-fibEq f y x p .x .p (refl .x , refl p) = refl (x , p)
+\end{code}
+после чего также по индукции построим соответствующие гомотопии:
+\begin{code}
+fibEq-to-EqFi-invertible : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+                           → (f : A → B)
+                           → (y : B)
+                           → (x : A) → (p : f x ≡ y)
+                           → (x' : A) → (p' : f x' ≡ y)
+                           → is-invertible (fibEq-to-EqFib f y x p x' p')
+fibEq-to-EqFi-invertible {i} {j} {A} {B} f y x p x' p' = 
+    record {inv = G;
+            homotopy₁ = p1;
+            homotopy₂ = p2}
+    where
+        F : (x , p) ≡ (x' , p') → Eq-fib f y x p x' p'
+        F = fibEq-to-EqFib f y x p x' p'
+
+        G : Eq-fib f y x p x' p' → (x , p) ≡ (x' , p')
+        G = EqFib-to-fibEq f y x p x' p'
+
+        p1 : (F ∘ G) ∼ id
+        p1 (refl .x , refl p) = refl _
+
+        p2 : (G ∘ F) ∼ id
+        p2 (refl .(x , p)) = refl _            
+\end{code} 
+
+Во-вторых, определим композицию функций с гомотопиями (анг. Whiskering):
+\begin{code}
+leftWhisk : {i j k : Level} → {A : 𝒰 i} → {B : 𝒰 j} → {C : 𝒰 k}
+            → (f : B → C)
+            → {g : A → B} → {h : A → B} → (H : g ∼ h)
+            → (f ∘ g) ∼ (f ∘ h)
+leftWhisk {i} {j} {k} {A} {B} {C} f {g} {h} H x = ap f (H x)
+
+rightWhisk : {i j k : Level} → {A : 𝒰 i} → {B : 𝒰 j} → {C : 𝒰 k}
+             → {g : B → C} → {h : B → C} → (H : g ∼ h)
+             → (f : A → B)
+             → (g ∘ f) ∼ (h ∘ f)
+rightWhisk {i} {j} {k} {A} {B} {C} {g} {h} H f x = H (f x)
+\end{code}
+В-третьих, определим понятие сильно-обратимой функции (анг. coherently invertible):
+\begin{code}
+record is-coh-invertible {i j : Level} {A : 𝒰 i} {B : 𝒰 j} (f : A → B) : 𝒰 (i ⊔ j) where
+    inductive
+    field
+        inv : B → A
+        homotopy₁ : (f ∘ inv) ∼ id
+        homotopy₂ : (inv ∘ f) ∼ id
+        homotopy₃ : (rightWhisk homotopy₁ f) ∼ (leftWhisk f homotopy₂)
+\end{code}
+
+Покажем, что всякая сильно-обратимая функция стягиваема.
+\begin{code}
+coh-invertible-to-contractible : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+                                 → (f : A → B)
+                                 → is-coh-invertible f
+                                 → is-contractible-map f
+coh-invertible-to-contractible {i} {j} {A} {B} f cohProof b = (((g b , G b)) , p4)
+    where
+        g : B → A
+        g = is-coh-invertible.inv cohProof
+
+        G : (f ∘ g) ∼ id
+        G = is-coh-invertible.homotopy₁ cohProof
+
+        H : (g ∘ f) ∼ id
+        H = is-coh-invertible.homotopy₂ cohProof
+
+        K : (rightWhisk G f) ∼ (leftWhisk f H)
+        K = is-coh-invertible.homotopy₃ cohProof
+
+        p1 : (x : A) → g (f x) ≡ x
+        p1 x = H x
+
+        K' : (x : A) → G(f x) ≡ trans (ap f (H x)) (refl (f x))
+        K' x = trans-htpy K (sym-htpy (right-unit-htpy (leftWhisk f H))) x
+
+        p2 : (x : A) → (p : f x ≡ b) → Eq-fib f b (g b) (G b) x p
+        p2 x (refl .(f x)) = (p1 x , K' x)
+
+        p3 : (x : A) → (p : f x ≡ b) → (g b , G b) ≡ (x , p)
+        p3 x p = (is-invertible.inv (fibEq-to-EqFi-invertible f b (g b) (G b) x p)) (p2 x p)
+
+        p4 : (x : fib f b) → (g b , G b) ≡ x
+        p4 (x , p) = p3 x p
+\end{code}
+\end{proof}
+
 \begin{thebibliography}{}
     \bibitem[SorUrz06]{SorUrz06}
     M. H. Sorensen, P. Urzycyn. \textit{Lectures on the Curry-Howard \\ Isomorphism.}
@@ -2841,3 +3041,4 @@ is-contractible-map {i} {j} {A} {B} f = (b : B) → is-contractible (fib f b)
 \end{thebibliography}
 
 \end{document}
+  
