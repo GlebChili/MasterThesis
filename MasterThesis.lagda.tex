@@ -3185,7 +3185,32 @@ $K : \op{leftWhisk}(f, H) \sim \op{rightWhisk}(G', f)$
                 p11' : ((rightWhisk G' f) x) ≡ ap f (H x)
                 p11' = trans p10' p8'
 \end{code}
+
+Пусть $f$ \dash эквивалентность, а значит обратима, а значит сильно-обратима, а значит стягиваема.
+\begin{code}
+equiv-to-contractible : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+                        → (f : A → B)
+                        → is-equiv f
+                        → is-contractible-map f
+equiv-to-contractible f equivProof = contractibleProof
+    where
+        invertibleProof : is-invertible f
+        invertibleProof = equiv-to-invertible f equivProof
+
+        cohInvertibleProof : is-coh-invertible f
+        cohInvertibleProof = invertible-to-strong-inv f invertibleProof
+
+        contractibleProof : is-contractible-map f
+        contractibleProof = coh-invertible-to-contractible f cohInvertibleProof
+\end{code}
 \end{proof}
+Таким образом, для любой функции $f : A \rightarrow B$ имеем следующий треугольник:
+$$
+\begin{tikzcd}
+    \op{is-equiv}(f) \arrow[rr] & & \arrow[dl] \op{is-invertible}(f) \\
+    & \arrow[ul] \op{is-contractible-map}(f) &
+\end{tikzcd}
+$$
 
 \begin{thebibliography}{}
     \bibitem[SorUrz06]{SorUrz06}
