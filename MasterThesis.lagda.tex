@@ -1991,17 +1991,63 @@ trans : {i : Level} → {A : 𝒰 i} → {a b c : A}
         → a ≡ b → b ≡ c → a ≡ c
 trans {i} {A} {a} {a} {c} (refl a) e2 = e2
 
-left-trans-unit : {i : Level} → {A : 𝒰 i} -- пригодится
+-- пригодится позже
+left-trans-unit : {i : Level} → {A : 𝒰 i}
                   → {x y : A}
                   → (p : x ≡ y)
                   → (trans (refl x) p) ≡ p
 left-trans-unit {i} {A} {x} {.x} (refl .x) = refl (refl x)
 
-right-trans-unit : {i : Level} → {A : 𝒰 i} -- пригодится
+right-trans-unit : {i : Level} → {A : 𝒰 i}
                   → {x y : A}
                   → (p : x ≡ y)
                   → (trans p (refl y)) ≡ p
 right-trans-unit {i} {A} {x} {.x} (refl .x) = refl (refl x)
+
+left-trans-cancellation : {i : Level} → {X : 𝒰 i}
+     → {x y z : X}
+     → (p₁ : x ≡ y)
+     → (p₂ p₃ : y ≡ z)
+     → (trans p₁ p₂) ≡ (trans p₁ p₃)
+     → p₂ ≡ p₃
+left-trans-cancellation {i} {X} {x} {x} {z} (refl x) p₂ p₃ eq = eq
+
+right-trans-cancellation : {i : Level} → {X : 𝒰 i}
+     → {x y z : X}
+     → (p₁ p₂ : x ≡ y)
+     → (p₃ : y ≡ z)
+     → (trans p₁ p₃) ≡ (trans p₂ p₃)
+     → p₁ ≡ p₂
+right-trans-cancellation {i} {X} {x} {y} {y} p₁ p₂ (refl y) eq = trans p2 p3
+    where
+        p1 : p₁ ≡ trans p₁ (refl y)
+        p1 = sym (right-trans-unit p₁)
+
+        p2 : p₁ ≡ trans p₂ (refl y)
+        p2 = trans p1 eq
+
+        p3 : trans p₂ (refl y) ≡ p₂
+        p3 = right-trans-unit p₂
+
+left-trans-inverse : {i : Level} → {A : 𝒰 i} → {x y z : A}
+                     → (p₁ : x ≡ y) 
+                     → (p₂ : y ≡ z)
+                     → trans (sym p₁) (trans p₁ p₂) ≡ p₂
+left-trans-inverse {i} {A} {x} {.x} {z} (refl .x) p₂ = refl p₂
+
+right-trans-inverse : {i : Level} → {A : 𝒰 i} → {x y z : A}
+                     → (p₁ : x ≡ y) 
+                     → (p₂ : y ≡ z)
+                     → trans (trans p₁ p₂) (sym p₂) ≡ p₁
+right-trans-inverse {i} {A} {x} {x} {x} (refl x) (refl x) = refl (refl x)
+
+trans-assoc : {i : Level} → {A : 𝒰 i} → {x y z w : A}
+    → (p₁ : x ≡ y)
+    → (p₂ : y ≡ z)
+    → (p₃ : z ≡ w)
+    → trans p₁ (trans p₂ p₃) ≡ trans (trans p₁ p₂) p₃
+trans-assoc {i} {A} {x} {x} {x} {x} 
+    (refl x) (refl x) (refl x) = refl (refl x)
 \end{code}
 
 Напомним, что в логике первого порядка, отношение равенства задаётся (помимо условий
@@ -2020,6 +2066,11 @@ ap {i} {j} {A} {B} {a} {a} f (refl a) = refl (f a)
 transport : {i j : Level} → {A : 𝒰 i}  → {a b : A} → (C : A → 𝒰 j)
             → a ≡ b → (C a → C b)
 transport {i} {j} {A} {a} {.a} C (refl .a) ca = ca
+
+ap-id : {i : Level} → {X : 𝒰 i} → {x y : X}
+        → (p : x ≡ y)
+        → (ap id p) ≡ p
+ap-id {i} {X} {x} {x} (refl x) = refl (refl x)
 \end{code}
 
 Перейдём к формализации и доказательству свойств натуральных чисел. Начнём с того, что в нашей теории типов
@@ -3014,6 +3065,128 @@ coh-invertible-to-contractible {i} {j} {A} {B} f cohProof b = (((g b , G b)) , p
 
         p4 : (x : fib f b) → (g b , G b) ≡ x
         p4 (x , p) = p3 x p
+\end{code}
+
+Наконец покажем, что всякая обратимая функция $f$ на самом деле является сильно обратимой.
+\begin{code}
+invertible-to-strong-inv : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j} → (f : A → B) 
+                           → is-invertible f 
+                           → is-coh-invertible f
+invertible-to-strong-inv {i} {j} {A} {B} f invProof = 
+    record {inv = g;
+            homotopy₁ = G';
+            homotopy₂ = H;
+            homotopy₃ = K}
+    where
+        g : B → A
+        g = is-invertible.inv invProof
+
+        G : (f ∘ g) ∼ id
+        G = is-invertible.homotopy₁ invProof
+
+        H : (g ∘ f) ∼ id
+        H = is-invertible.homotopy₂ invProof
+\end{code}
+Построим гомотопию $G' : f \circ g \sim \op{id}$ и гомотопию 
+$K : \op{leftWhisk}(f, H) \sim \op{rightWhisk}(G', f)$
+\begin{code}
+        p1 : (y : B) → f (g y) ≡ f (g (f (g y)))
+        p1 y = sym (G (f (g y)))
+
+        p2 : (y : B) → f (g (f (g y))) ≡ f (g y)
+        p2 y = ap f (H (g y))
+
+        p3 : (y : B) → f (g y) ≡ y
+        p3 y = G y
+
+        G' : (f ∘ g) ∼ id
+        G' y = trans (trans (p1 y) (p2 y)) (p3 y)
+
+        nat-htpy : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
+                   → (f : A → B)
+                   → (g : A → B)
+                   → (H : f ∼ g)
+                   → {x y : A}
+                   → (p : x ≡ y)
+                   → (trans (ap f p) (H y)) ≡ (trans (H x) (ap g p))
+        nat-htpy {i} {j} {A} {B} f g H {x} {.x} (refl .x) = sym (right-trans-unit (H x))
+
+        ap-commut : {i : Level} → {A : 𝒰 i}
+                    → (f : A → A)
+                    → (H : f ∼ id)
+                    → (x : A)
+                    → H (f x) ≡ ap f (H x)
+        ap-commut {i} {A} f H x = sym p4'
+            where
+                p1' : trans (H (f x)) (ap id (H x)) ≡ trans (H (f x)) (H x)
+                p1' = ap (λ z → trans (H (f x)) z) (ap-id (H x))
+
+                p2' : trans (ap f (H x)) (H x) ≡ trans (H (f x)) (ap id (H x))
+                p2' = nat-htpy f id H {f x} {x} (H x)
+
+                p3' : trans (ap f (H x)) (H x) ≡ trans (H (f x)) (H x)
+                p3' = trans p2' p1'
+
+                p4' : ap f (H x) ≡ H (f x)
+                p4' = right-trans-cancellation (ap f (H x)) (H (f x)) (H x) p3'
+
+        ap-comp : {i j k : Level} → {A : 𝒰 i} → {B : 𝒰 j} → {C : 𝒰 k}
+                  → (f : A → B)
+                  → (g : B → C)
+                  → {x y : A}
+                  → (p : x ≡ y)
+                  → (ap g (ap f p)) ≡ (ap (g ∘ f) p)
+        ap-comp {i} {j} {k} {A} {B} {C} f g {x} {.x} (refl .x) = refl _
+
+        K : (rightWhisk G' f) ∼ (leftWhisk f H)
+        K x = trans p11' (sym p2')
+            where
+                p1' : ((rightWhisk G' f) x) 
+                    ≡ trans (trans (sym (G (f (g (f x))))) (ap f (H (g (f x))))) (G (f x))
+                p1' = refl _
+
+                p2' : ((leftWhisk f H) x) ≡ ap f (H x)
+                p2' = refl _
+
+                p3' : trans (trans (sym (G (f (g (f x))))) (ap f (H (g (f x))))) (G (f x)) 
+                    ≡ trans (trans (sym (G (f (g (f x))))) (ap f (ap (g ∘ f) (H x)))) (G (f x))
+                p3' = ap 
+                    (λ z → trans (trans (sym (G (f (g (f x))))) (ap f z)) (G (f x))) 
+                        (ap-commut (g ∘ f) H x)
+
+                p4' : trans (trans (sym (G (f (g (f x))))) (ap f (ap (g ∘ f) (H x)))) (G (f x))
+                    ≡ trans (trans (sym (G (f (g (f x))))) (ap (f ∘ (g ∘ f)) (H x))) (G (f x))
+                p4' = ap 
+                    (λ z → trans (trans (sym (G (f (g (f x))))) z) (G (f x))) 
+                        (ap-comp (g ∘ f) f (H x))
+                
+                p5' : ((rightWhisk G' f) x) 
+                    ≡ trans (trans (sym (G (f (g (f x))))) (ap (f ∘ (g ∘ f)) (H x))) (G (f x))
+                p5' = trans (trans p1' p3') p4'
+
+                p6' : trans (ap (f ∘ (g ∘ f)) (H x)) (G (f x)) 
+                    ≡ trans (G (f ((g ∘ f) x))) (ap f (H x))
+                p6' = nat-htpy (f ∘ (g ∘ f)) f (rightWhisk G f) (H x)
+
+                p7' : trans (sym (G (f (g (f x))))) (trans (ap (f ∘ (g ∘ f)) (H x)) (G (f x))) 
+                    ≡ trans (sym (G (f (g (f x))))) (trans (G (f ((g ∘ f) x))) (ap f (H x)))
+                p7' = ap (λ z → trans (sym (G (f (g (f x))))) z) p6'
+
+                p8' : trans (sym (G (f (g (f x))))) (trans (G (f ((g ∘ f) x))) (ap f (H x)))
+                    ≡ ap f (H x)
+                p8' = left-trans-inverse (G (f (g (f x)))) (ap f (H x))
+
+                p9' : trans (trans (sym (G (f (g (f x))))) (ap (f ∘ (g ∘ f)) (H x))) (G (f x))
+                    ≡ trans (sym (G (f (g (f x))))) (trans (ap (f ∘ (g ∘ f)) (H x)) (G (f x)))
+                p9' = sym 
+                    (trans-assoc (sym (G (f (g (f x))))) (ap (f ∘ (g ∘ f)) (H x)) (G (f x)))
+
+                p10' : ((rightWhisk G' f) x)
+                     ≡ trans (sym (G (f (g (f x))))) (trans (G (f ((g ∘ f) x))) (ap f (H x)))
+                p10' = trans (trans p5' p9') p7'
+
+                p11' : ((rightWhisk G' f) x) ≡ ap f (H x)
+                p11' = trans p10' p8'
 \end{code}
 \end{proof}
 
