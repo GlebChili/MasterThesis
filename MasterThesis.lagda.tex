@@ -3249,6 +3249,50 @@ postulate
            → (A ≡ B) ≃ (A ≃ B)
 \end{code}
 
+Аксиома унивалентности является естественным расширением интуиционистской теории типов, так как
+эквивалентность, по сути, устанавливает их изоморфизм типов. И как и во многих других
+разделах математики, нам удобно говорить о равенстве объектов с точностью до изоморфизма.
+Так, в главе 2 мы заметили, что два типа порядка на $\mathbb{N}$ логически эквивалентны.
+Теперь мы можем усилить наше утверждение, и доказать, что $n \leq m$ и $n \leq' m$ равны
+для любых $n, m : \mathbb{N}$. Для начала покажем, что $\op{≤-to-≤’} n m$ \dash обратимая
+функция.
+\begin{code}
+≤-to-≤'-is-invertible : (n m : ℕ) → is-invertible (≤-to-≤' n m)
+≤-to-≤'-is-invertible n m = 
+    record {inv = (≤'-to-≤ n m);
+            homotopy₁ = λ x → p1 n m x;
+            homotopy₂ = λ x → p2 n m x}
+    where
+        p1 : (n m : ℕ) → (x : n ≤' m) → ≤-to-≤' n m (≤'-to-≤ n m x) ≡ x
+        p1 zero m (z≤'n .m) = refl (z≤'n m)
+        p1 (suc n) (suc m) (sn≤'sm .n .m x) = ap (sn≤'sm n m) (p1 n m x)
+
+        p2 : (n m : ℕ) → (x : n ≤ m) → (≤'-to-≤ n m (≤-to-≤' n m x) ≡ x)
+        p2 zero zero * = refl *
+        p2 zero (suc m) * = refl *
+        p2 (suc n) (suc m) x = p2 n m x
+\end{code}
+Теперь просто воспользуемся аксиомой унивалентности:
+\begin{code}
+≤-≡-≤' : (n m : ℕ) → (n ≤ m) ≡ (n ≤' m)
+≤-≡-≤' n m = p4
+    where
+        p1 : is-equiv (≤-to-≤' n m)
+        p1 = invertible-to-equiv (≤-to-≤' n m) (≤-to-≤'-is-invertible n m)
+
+        p2 : ((n ≤ m) ≡ (n ≤' m)) ≃ ((n ≤ m) ≃ (n ≤' m))
+        p2 = uni₀ (n ≤ m) (n ≤' m)
+
+        p3 :  ((n ≤ m) ≃ (n ≤' m)) → ((n ≤ m) ≡ (n ≤' m))
+        p3 = is-equiv.inv₁ (pr₂ p2)
+
+        p4 : (n ≤ m) ≡ (n ≤' m)
+        p4 = p3 ((≤-to-≤' n m , p1))
+\end{code}
+
+Очевидно, что таким же образом мы можем показать, что для любого $X : \mathcal{U}_0$ 
+$\op{Grp}(X) \equiv \op{Group}(X)$.
+
 \begin{thebibliography}{}
     \bibitem[SorUrz06]{SorUrz06}
     M. H. Sorensen, P. Urzycyn. \textit{Lectures on the Curry-Howard \\ Isomorphism.}
@@ -3273,4 +3317,4 @@ postulate
 \end{thebibliography}
 
 \end{document}
-  
+   
