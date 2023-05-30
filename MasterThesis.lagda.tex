@@ -3293,6 +3293,24 @@ postulate
 Очевидно, что таким же образом мы можем показать, что для любого $X : \mathcal{U}_0$ 
 $\op{Grp}(X) \equiv \op{Group}(X)$.
 
+\begin{theorem}[Воеводский \cite{Rij22}]
+    Пусть $\mathcal U_i$ \dash унивалентный универсум. Тогда для любых $A, B : \mathcal U_i$ и
+    $f, g : A \rightarrow B$ выполнена функциональная экстанциональность.
+\end{theorem}
+\begin{code}
+postulate
+    univalence-implies-extensionality : (i : Level) 
+        → ((A : 𝒰 i) → (B : 𝒰 i) → (A ≡ B) ≃ (A ≃ B))
+        → (X : 𝒰 i) → (Y : 𝒰 i)
+        → (f g : X → Y)
+        → funExt f g
+
+funExt₀ : {A : 𝒰} → {B : 𝒰}
+          → (f g : A → B)
+          → funExt f g
+funExt₀ {A} {B} f g = univalence-implies-extensionality lzero uni₀ A B f g
+\end{code}
+
 \begin{thebibliography}{}
     \bibitem[SorUrz06]{SorUrz06}
     M. H. Sorensen, P. Urzycyn. \textit{Lectures on the Curry-Howard \\ Isomorphism.}
@@ -3314,6 +3332,9 @@ $\op{Grp}(X) \equiv \op{Group}(X)$.
     \bibitem[HoTTBook]{HoTTBook}
     S. Awodey et al. \textit{Homotopy Type Theory: Univalent Foundations of Mathematics.} Institute for Advanced Study.
     Version: first-edition-1357-gde0b8e22.
+
+    \bibitem[Rij22]{Rij22}
+    E. Rijke. \textit{Introduction to Homotopy Type Theory.} 2022. arXiv:2212.11082
 \end{thebibliography}
 
 \end{document}
