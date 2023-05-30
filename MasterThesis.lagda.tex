@@ -67,6 +67,7 @@
 \newunicodechar{≃}{\ensuremath{\mathnormal{\simeq}}}
 \newunicodechar{∙}{\ensuremath{\mathnormal{\cdot}}}
 \newunicodechar{∎}{\ensuremath{\mathnormal{\blacksquare}}}
+\newunicodechar{≅}{\ensuremath{\mathnormal{\cong}}}
 
 \newtheorem{theorem}{Теорема}
 \newtheorem{lemma}{Лемма}
@@ -2771,11 +2772,13 @@ infixl 10 _∘_
 
 record is-equiv {i j : Level} {A : 𝒰 i} {B : 𝒰 j} (f : A → B) : 𝒰 (i ⊔ j) where
     inductive
+    constructor
+        Inverse
     field
         inv₁ : B → A
+        homotopy₁ : (inv₁ ∘ f) ∼ id
         inv₂ : B → A
-        homotopy₁ : (f ∘ inv₁) ∼ id
-        homotopy₂ : (inv₂ ∘ f) ∼ id
+        homotopy₂ : (f ∘ inv₂) ∼ id
 \end{code}
 
 \begin{definition}
@@ -2784,8 +2787,13 @@ record is-equiv {i j : Level} {A : 𝒰 i} {B : 𝒰 j} (f : A → B) : 𝒰 (i 
     если существует эквивалентность $f : A \rightarrow B$.
 \end{definition}
 \begin{code}
-_≃_ : {i j : Level} → 𝒰 i → 𝒰 j → 𝒰 (i ⊔ j)
-A ≃ B = Σ (A → B) (λ f → is-equiv f)
+record _≃_ {i j : Level} (A : 𝒰 i) (B : 𝒰 j) : 𝒰 (i ⊔ j) where
+    inductive
+    constructor
+        Equivalence
+    field
+        map : A → B
+        equivProof : is-equiv map
 \end{code}
 
 \begin{definition}
@@ -2796,10 +2804,19 @@ A ≃ B = Σ (A → B) (λ f → is-equiv f)
 \begin{code}
 record is-invertible {i j : Level} {A : 𝒰 i} {B : 𝒰 j} (f : A → B) : 𝒰 (i ⊔ j) where
     inductive
+    constructor
+        Inverse
     field
         inv : B → A
-        homotopy₁ : (f ∘ inv) ∼ id
-        homotopy₂ : (inv ∘ f) ∼ id
+        homotopy₁ : (inv ∘ f) ∼ id
+        homotopy₂ : (f ∘ inv) ∼ id
+
+record _≅_ {i j : Level} (A : 𝒰 i) (B : 𝒰 j) : 𝒰 (i ⊔ j) where
+    constructor
+        Isomorphism
+    field
+        bijection   : A → B
+        bijectivity : is-invertible bijection
 \end{code}
 
 На первый взгляд кажется, что условие $\op{is-invertible}(f)$ сильнее, чем условие $\op{is-equiv}(f)$, но при более
@@ -2833,20 +2850,20 @@ equiv-to-invertible : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
                       → is-invertible f
 equiv-to-invertible {i} {j} {A} {B} f equivProof = 
     record {inv = g;
-            homotopy₁ = is-equiv.homotopy₁ equivProof;
-            homotopy₂ = λ a → trans (p4 (f a)) ((is-equiv.homotopy₂ equivProof) a)}
+            homotopy₁ = λ a → trans (p4 (f a)) ((is-equiv.homotopy₁ equivProof) a);
+            homotopy₂ = is-equiv.homotopy₂ equivProof}
     where
         g : B → A
-        g = is-equiv.inv₁ equivProof
+        g = is-equiv.inv₂ equivProof
 
         h : B → A
-        h = is-equiv.inv₂ equivProof
+        h = is-equiv.inv₁ equivProof
 
         p1 : g ∼ (h ∘ f ∘ g)
-        p1 = λ b → sym ((is-equiv.homotopy₂ equivProof) (g b))
+        p1 = λ b → sym ((is-equiv.homotopy₁ equivProof) (g b))
 
         p2 : (h ∘ (f ∘ g)) ∼ h
-        p2 = λ b → ap h ((is-equiv.homotopy₁ equivProof) b)
+        p2 = λ b → ap h ((is-equiv.homotopy₂ equivProof) b)
 
         p3 : (h ∘ f ∘ g) ∼ (h ∘ (f ∘ g))
         p3 = λ b → refl (h (f (g b)))
@@ -2909,8 +2926,8 @@ contractible-to-equiv {i} {j} {A} {B} f contrProof =
     record {
         inv₁ = g;
         inv₂ = g;
-        homotopy₁ = p1;
-        homotopy₂ = p5
+        homotopy₁ = p5;
+        homotopy₂ = p1
     }
     where
         g : B → A
@@ -2989,8 +3006,8 @@ fibEq-to-EqFi-invertible : {i j : Level} → {A : 𝒰 i} → {B : 𝒰 j}
                            → is-invertible (fibEq-to-EqFib f y x p x' p')
 fibEq-to-EqFi-invertible {i} {j} {A} {B} f y x p x' p' = 
     record {inv = G;
-            homotopy₁ = p1;
-            homotopy₂ = p2}
+            homotopy₁ = p2;
+            homotopy₂ = p1}
     where
         F : (x , p) ≡ (x' , p') → Eq-fib f y x p x' p'
         F = fibEq-to-EqFib f y x p x' p'
@@ -3081,10 +3098,10 @@ invertible-to-strong-inv {i} {j} {A} {B} f invProof =
         g = is-invertible.inv invProof
 
         G : (f ∘ g) ∼ id
-        G = is-invertible.homotopy₁ invProof
+        G = is-invertible.homotopy₂ invProof
 
         H : (g ∘ f) ∼ id
-        H = is-invertible.homotopy₂ invProof
+        H = is-invertible.homotopy₁ invProof
 \end{code}
 Построим гомотопию $G' : f \circ g \sim \op{id}$ и гомотопию 
 $K : \op{leftWhisk}(f, H) \sim \op{rightWhisk}(G', f)$
@@ -3262,8 +3279,8 @@ postulate
 ≤-to-≤'-is-invertible : (n m : ℕ) → is-invertible (≤-to-≤' n m)
 ≤-to-≤'-is-invertible n m = 
     record {inv = (≤'-to-≤ n m);
-            homotopy₁ = λ x → p1 n m x;
-            homotopy₂ = λ x → p2 n m x}
+            homotopy₁ = λ x → p2 n m x;
+            homotopy₂ = λ x → p1 n m x}
     where
         p1 : (n m : ℕ) → (x : n ≤' m) → ≤-to-≤' n m (≤'-to-≤ n m x) ≡ x
         p1 zero m (z≤'n .m) = refl (z≤'n m)
@@ -3286,10 +3303,10 @@ postulate
         p2 = uni₀ (n ≤ m) (n ≤' m)
 
         p3 :  ((n ≤ m) ≃ (n ≤' m)) → ((n ≤ m) ≡ (n ≤' m))
-        p3 = is-equiv.inv₁ (pr₂ p2)
+        p3 = is-equiv.inv₁ ((_≃_.equivProof p2))
 
         p4 : (n ≤ m) ≡ (n ≤' m)
-        p4 = p3 ((≤-to-≤' n m , p1))
+        p4 = p3 (Equivalence (≤-to-≤' n m) p1)
 \end{code}
 
 Очевидно, что таким же образом мы можем показать, что для любого $X : \mathcal{U}_0$ 
@@ -3412,6 +3429,71 @@ example =
     loop ∙ (refl _)                              ≡⟨ refl _ ⟩ 
     loop ∎
 \end{code}
+
+$S^1$ \dash тип, определённый с помощью постулата, а значит Agda ничего не знает
+о правилах вычисления или элиминации для него, нам нужно определить их вручную. Однако
+для этого нам нужно определить так называемые пути-над-путём. 
+
+Рассмотрим терм $P : \prod_{(x : A)} B$.
+Пусть также у нас есть два различных терма $x, y : A$ и терм $p : x \equiv_{A} y$. 
+Естественно считать, что в таком случае у нас есть также терм типа $P(x) \equiv P(y)$, но такой тип
+вообще говоря, не является корректно определённым, так как $P(x)$ и $P(y)$ лежат в разных типах
+($B(x)$ и $B(y)$ соответственно). Воспользуемся топологической интерпретацией, и рассмотрим
+"тотальное пространство" \; $\sum_{(x : A)} B$. 
+\begin{code}
+from-Σ-≡ : {i j : Level} → {X : 𝒰 i} → {P : X → 𝒰 j}
+           → {x y : X}
+           → {a : P x} → {b : P y}
+           → (x , a) ≡ (y , b)
+           → Σ (x ≡ y) (λ p → transport P p a ≡ b)
+from-Σ-≡ {i} {j} {X} {P} {x} {x} {a} {a} (refl (x , a)) = (refl x , refl a)
+
+to-Σ-≡ : {i j : Level} → {X : 𝒰 i} → {P : X → 𝒰 j}
+         → {x y : X}
+         → {a : P x} → {b : P y}
+         → Σ (x ≡ y) (λ p → transport P p a ≡ b)
+         → (x , a) ≡ (y , b)
+to-Σ-≡ {i} {j} {X} {P} {x} {.x} {a} {.a} (refl .x , refl .a) = refl (x , a)
+\end{code}
+Таким образом, в нашем тотальном пространстве любой пусть $\alpha$ из $(x, P(x))$ в $(y, P(y))$
+однозначно задаётся парой путей: $\beta$ из $x$ в $y$ и $\gamma$ из $\op{transport}(B, \beta, P(x))$ в $P(y)$.
+Путь $\gamma$ принято называть путём над $\beta$. Зададим свойство "быть путём-над-путём" \;
+с помощью индуктивного типа:
+\begin{code}
+data PathOver {i j : Level} {A : 𝒰 i} (B : A → 𝒰 j) :
+              {a₁ a₂ : A} (p : a₁ ≡ a₂)
+              (b₁ : B a₁) (b₂ : B a₂) → 𝒰 (i ⊔ j) where
+  reflo : {x : A} {y : B x} → PathOver B (refl x) y y
+
+syntax PathOver B p b₁ b₂ = b₁ ≡ b₂ [ B ↓ p ] -- определяем синоним
+\end{code}
+
+Покажем, что $\op{PathOver}$ \dash это в точности тип путей-над-путями.
+\begin{lemma}
+    Пусть $A : \mathcal U_i$ и $B : \prod_{(x : A)} \mathcal U_j$. Тогда для
+    любых $a_1, a_2 : A$ $b_1 : B(a_1)$ $b_2 : B(a_2)$ и любого $p : a_1 \equiv_A a_2$
+    $$(\op{transport}(B, p, b₁) ≡_{B(a_2)} b₂) \equiv_{\mathcal{U}_{(i \sqcup j)}} \op{PathOver}(B, p, b_1, b_2)$$
+\end{lemma}
+\begin{proof}
+В силу унивалентности нам достаточно показать, что соответствующие типы эквивалентны.
+\begin{code}
+improve : {i j : Level} → {A : 𝒰 i} {B : 𝒰 j} 
+          → A ≅ B 
+          → A ≃ B
+improve x = 
+    Equivalence (_≅_.bijection x) (invertible-to-equiv (_≅_.bijection x) (_≅_.bijectivity x))
+
+transport-to-pathover : {i j : Level} {A : 𝒰 i} (B : A → 𝒰 j)
+                        {a₁ a₂ : A} (p : a₁ ≡ a₂)
+                        (b₁ : B a₁) (b₂ : B a₂)
+                     → (transport B p b₁ ≡ b₂) ≃ (b₁ ≡ b₂ [ B ↓ p ]) 
+transport-to-pathover B (refl _) b₁ b₂ = 
+    improve (Isomorphism ((λ { (refl _) → reflo })) -- λ {...} - определение
+            (Inverse (λ { reflo → refl _}) -- анонимной функциии через разбор случаев
+                     (λ {(refl _) → refl _})
+                     (λ {(reflo) → refl _})))
+\end{code}
+\end{proof}
 
 \begin{thebibliography}{}
     \bibitem[SorUrz06]{SorUrz06}
