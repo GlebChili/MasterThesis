@@ -65,6 +65,8 @@
 \newunicodechar{∼}{\ensuremath{\mathnormal{\sim}}}
 \newunicodechar{∘}{\ensuremath{\mathnormal{\circ}}}
 \newunicodechar{≃}{\ensuremath{\mathnormal{\simeq}}}
+\newunicodechar{∙}{\ensuremath{\mathnormal{\cdot}}}
+\newunicodechar{∎}{\ensuremath{\mathnormal{\blacksquare}}}
 
 \newtheorem{theorem}{Теорема}
 \newtheorem{lemma}{Лемма}
@@ -3349,6 +3351,67 @@ postulate
         \RightLabel{$S^1 \op{-INTRO-LOOP}$}
     \UnaryInfC{$\Gamma \vdash loop : base \equiv_{S^1} base$}
 \end{prooftree}
+
+В предыдущей главе мы уже доказали, что на равенствах существует структура группойда. В
+силу топологической интерпретации эта структура становится еще более естественной. Введем
+более удобное для дальнейшего повествования обозначения.
+\begin{code}
+-- Композиция путей
+_∙_ : {i : Level} {A : 𝒰 i} {x y z : A} → x ≡ y → y ≡ z → x ≡ z
+p ∙ (refl y) = p
+    
+infixl 7 _∙_
+
+-- Обращение пути
+! : {i : Level} {A : 𝒰 i} {x y : A} → x ≡ y → y ≡ x
+! (refl x) = refl x
+
+∙unit-r : {i : Level} → {A : 𝒰 i} {x y : A} → (p : x ≡ y) → (p ∙ refl _) ≡ p
+∙unit-r p = refl _
+
+∙unit-l : {i : Level} → {A : 𝒰 i} {x y : A} → (p : x ≡ y) → (refl _ ∙ p) ≡ p
+∙unit-l (refl _) = refl _
+
+∙assoc : {i : Level} → {A : 𝒰 i} 
+         → {x y z w : A} 
+         → (p : x ≡ y) → (q : y ≡ z) → (r : z ≡ w)
+         → p ∙ (q ∙ r) ≡ (p ∙ q) ∙ r
+∙assoc p (refl _) (refl _) = (refl _)
+
+!-inv-l : {i : Level} → {A : 𝒰 i} {x y : A} → (p : x ≡ y) → (! p ∙ p) ≡ refl _
+!-inv-l (refl _) = refl _
+
+!-inv-r : {i : Level} → {A : 𝒰 i} {x y : A} → (p : x ≡ y) → (p ∙ ! p) ≡ refl _
+!-inv-r (refl _) = refl _
+\end{code}
+Введём также специальный тернарный оператор, который позволит нам сильно
+компактно записывать доказательства равенства по транзитивности, не используя конструкцию
+where:
+\begin{code}
+_≡⟨_⟩_ : {i : Level} {X : 𝒰 i} (x : X) {y z : X} 
+         → x ≡ y → y ≡ z → x ≡ z
+x ≡⟨ p ⟩ q = p ∙ q
+
+_∎ : {i : Level} {X : 𝒰 i} (x : X) → x ≡ x -- постфиксный оператор
+x ∎ = refl x
+
+infixr  0 _≡⟨_⟩_
+infix   1 _∎
+\end{code}
+
+Покажем, что наши операции композиции и обращения действуют естественным образом
+на $loop$.
+\begin{code}
+example : (loop ∙ ! loop ∙ loop ∙ ! loop  ∙ loop) ≡ loop
+example = 
+    loop ∙ ! loop ∙ loop ∙ ! loop  ∙ loop  ≡⟨ refl _ ⟩
+    (((loop ∙ ! loop) ∙ loop) ∙ ! loop)  ∙ loop  ≡⟨ ap (λ H → H ∙ loop ∙ ! loop ∙ loop) (!-inv-r loop)  ⟩
+    refl _ ∙ loop ∙ ! loop ∙ loop                ≡⟨  ap (λ H → H ∙ ! loop ∙ loop) (∙unit-l (loop))  ⟩
+    loop ∙ ! loop ∙ loop                         ≡⟨  ! (∙assoc _ (! loop) loop)  ⟩
+    loop ∙ (! loop ∙ loop)                       ≡⟨  ap (λ H → loop ∙ H) (!-inv-l loop)  ⟩
+    loop ∙ (refl _)                              ≡⟨ refl _ ⟩ 
+    loop ∎
+\end{code}
 
 \begin{thebibliography}{}
     \bibitem[SorUrz06]{SorUrz06}
