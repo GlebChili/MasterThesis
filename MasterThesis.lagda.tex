@@ -3640,6 +3640,143 @@ postulate
                    → apd (Circle-elim X n s w e) east ≡ e
 \end{code}
 
+Естественно, как и следовало ожидать от нашей синтетической теории гомотопий, мы можем
+доказать, что два представления выше задают один и тот же объект.
+
+\begin{theorem}
+    Тип $S^1$ и тип $Circle$ равны.
+    $$S^1 \equiv Circle$$
+\end{theorem}
+\begin{proof}
+В силу унивалентности, нам достаточно показать, что $S^1$ эквивалентен $Circle$.
+
+Для начала получим два отображения: из $S^1$ в $Circle$ и в обратную сторону.
+\begin{code}
+to : S¹ → Circle
+to = S¹-ind north (east ∙ ! west)
+  
+from : Circle → S¹
+from = Circle-ind base base (refl base) loop
+\end{code}
+Сразу заметим, что значение композиции $from \circ to$ на $base$ \dash это просто $base$
+\begin{code}
+to-from-base : from (to base) ≡ base
+to-from-base = refl base
+\end{code}
+
+Также нам потребуется следующая лемма: для любых двух функций $g : B \rightarrow A$ и
+$f : A \rightarrow B$, а также любых $a, a' : A$, если даны пути $p : a \equiv a'$,
+$q : g \circ f (a) \equiv a$, $r : g \circ f (a') \equiv a'$, а также дан "круговой" \; путь
+$! q ∙ ((\op{ap}(g, (\op{ap}(f, p)) ∙ r))) ≡ p$, то существует путь из $q$ в $r$ над путём
+$p$ для типа $\prod_{(x : A)}(g \circ f(x) \equiv x)$.
+\begin{code}
+fwd : {i j : Level} {A : 𝒰 i} {B : 𝒰 j} 
+      → A ≃ B 
+      → A → B
+fwd equiv = _≃_.map equiv
+
+path-to-pathover : {A : 𝒰} {B : A → 𝒰}
+                   → {a : A} {x y : B a}
+                   → (p : x ≡ y)
+                   → x ≡ y [ B ↓ refl a ]
+path-to-pathover {A} {B} {a} {x} {y} p = 
+    fwd (transport-to-pathover B (refl a) x y) p
+
+PathOver-roundtrip : {A B : 𝒰} (g : B → A) (f : A → B)
+                     {a a' : A} (p : a ≡ a')
+                     {q : g (f a) ≡ a}
+                     {r : g (f a') ≡ a'}
+                     → ! q ∙ ((ap g (ap f p)) ∙ r) ≡ p
+                     → q ≡ r [ (λ x → g (f x) ≡ x) ↓ p ]
+PathOver-roundtrip g f {a} {a'} (refl a) {q} {r} h =
+  path-to-pathover (ap (λ H → q ∙ H) (! h) ∙
+                    ( ∙assoc q (! q) (refl (g (f a)) ∙ r) ∙
+                    (ap (λ H → H ∙ (refl (g (f a)) ∙ r)) (!-inv-r q) ∙
+                    (∙unit-l (refl (g (f a)) ∙ r) ∙ ∙unit-l r )) ))
+\end{code}
+
+Теперь покажем, что уже для любого $x : S^1$ (а не только $base$), значение композиции $from \circ to$ на $x$ равно $x$.
+\begin{code}
+ap₂ : {i j k : Level} {A : 𝒰 i} {B : 𝒰 j} {C : 𝒰 k} 
+      → (f : A → B → C) 
+      → {x x' : A} {y y' : B}
+      → x ≡ x' → y ≡ y' 
+      → f x y ≡ f x' y'
+ap₂ f (refl x) (refl y) = refl (f x y)
+
+ap-∙ : {A B : 𝒰} {f : A → B} {x y z : A} (p : x ≡ y) (q : y ≡ z)
+       → ap f (p ∙ q) ≡ ap f p ∙ ap f q
+ap-∙ {A} {B} {f} {x} {x} {x} (refl x) (refl x) = refl (refl (f x))
+
+ap-! : {A B : 𝒰} {f : A → B} {x y : A} (p : x ≡ y) 
+       → ap f (! p) ≡ ! (ap f p)
+ap-! {A} {B} {f} {x} {x} (refl x) = refl (refl (f x))
+
+to-from-loop : ap from (ap to loop) ≡ loop
+to-from-loop = ap from (ap to loop) ≡⟨ ap (ap from) (S¹-ind-loop north (east ∙ ! west)) ⟩
+               ap from (east ∙ ! west) ≡⟨ ap-∙ east (! west) ⟩
+               ap from east ∙ ap from (! west) ≡⟨ ap₂ _∙_ (Circle-ind-east 
+                                                            base 
+                                                            base 
+                                                            (refl base) 
+                                                            loop)
+                                                          (ap-! west  ∙ ap ! (Circle-ind-west 
+                                                            base base (refl base) loop)) ⟩
+               loop ∙ ! (refl base) ≡⟨ refl loop  ⟩
+               loop ∎
+
+to-from : (x : S¹) → from (to x) ≡ x
+to-from = S¹-elim (λ x → from (to x) ≡ x)
+                  to-from-base
+                  (PathOver-roundtrip from to loop 
+                    ((∙unit-l (ap from (ap to loop))) ∙ to-from-loop))
+\end{code}
+
+Аналогично, покажем, что $to \circ from \sim id$.
+\begin{code}
+from-to-north : to (from north) ≡ north
+from-to-north = refl _
+  
+from-to-south : to (from south) ≡ south
+from-to-south = west
+
+from-to-west : ap to (ap from west) ∙ from-to-south ≡ west
+from-to-west = ap to (ap from west) ∙ west ≡⟨ ap (λ H → ap to H ∙ west) (Circle-ind-west _ _ _ _) ⟩
+               ap to (refl base) ∙ west    ≡⟨ ∙unit-l west ⟩
+               west ∎ 
+  
+from-to-east : ap to (ap from east) ∙ from-to-south ≡ east
+from-to-east = ap to (ap from east) ∙ west ≡⟨ ap (λ H → ap to H ∙ west) (Circle-ind-east _ _ _ _) ⟩
+               ap to loop ∙ west           ≡⟨ ap (λ H → H ∙ west) (S¹-ind-loop _ _) ⟩
+               east ∙ ! west ∙ west        ≡⟨ ! (∙assoc _ (! west) west) ⟩
+               east ∙ (! west ∙ west)      ≡⟨ ap (λ H → east ∙ H) (!-inv-l west) ⟩
+               east ∎
+
+from-to : (y : Circle) → to (from y) ≡ y
+from-to = Circle-elim _
+                      from-to-north
+                      from-to-south
+                      (PathOver-roundtrip to from west (∙unit-l _ ∙ from-to-west))
+                      (PathOver-roundtrip to from east (∙unit-l _ ∙ from-to-east))
+\end{code}
+
+Теперь, имея гомотопии $\op{to-from}$ и $\op{from-to}$, мы можем явно построить эквивалентность между
+$S^1$ и $Circle$:
+\begin{code}
+to-is-equiv : is-equiv to
+to-is-equiv = record {
+    inv₁ = from;
+    inv₂ = from;
+    homotopy₁ = to-from;
+    homotopy₂ = from-to}
+
+S¹≃Circle : S¹ ≃ Circle
+S¹≃Circle = record {
+    map = to;
+    equivProof = to-is-equiv}
+\end{code}
+\end{proof}
+
 \begin{thebibliography}{}
     \bibitem[SorUrz06]{SorUrz06}
     M. H. Sorensen, P. Urzycyn. \textit{Lectures on the Curry-Howard \\ Isomorphism.}
