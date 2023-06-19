@@ -1,6 +1,6 @@
 # Магистерская диссертация "Гомотопическая теория типов и ее модели"
 
-Собранный PDF-файл работы можно найти в разделе Releases данного репозитория.
+Собранный PDF-файл работы можно найти в разделе [Releases](https://github.com/GlebChili/MasterThesis/releases) данного репозитория.
 
 Главным файлом работы является `MasterThesis.lagda.tex`, являющийся 
 [Literate Agda TeX](https://agda.readthedocs.io/en/v2.6.3/tools/literate-programming.html#literate-agda-tex) файлом
